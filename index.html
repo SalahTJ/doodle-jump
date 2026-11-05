@@ -37,6 +37,11 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 #grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.sk{border:1.5px solid var(--line);background:transparent;color:var(--ink);border-radius:16px;padding:10px 6px;font:600 13px system-ui;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px}.sk i{width:34px;height:34px;border-radius:50%}.sk em{font-style:normal;color:var(--dim);font-size:12px}.sk.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
 #pb{position:absolute;top:12px;right:12px;width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--glass);color:var(--ink);font-size:16px;display:none;cursor:pointer;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 </style>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#bfe6ff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
 </head>
 <body>
@@ -52,6 +57,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 <button class="btn ghost" data-open="online">👥 Играть с другом</button>
 <button class="btn ghost" data-open="shop">Магазин скинов</button>
 <button class="btn ghost" data-open="settings">Настройки</button>
+<button class="btn ghost" id="inst" style="display:none">📲 Установить игру</button>
 </div></div>
 
 <div class="screen" id="settings"><div class="card">
@@ -285,6 +291,10 @@ function drawObjs(){drawBoss();ctx.textAlign='center';ctx.font='22px system-ui';
  if(sh){ctx.strokeStyle='rgba(120,200,255,.9)';ctx.lineWidth=3;ctx.fillStyle='rgba(120,200,255,.18)';ctx.beginPath();ctx.arc(P.x+P.w/2,P.y+P.h/2,32,0,7);ctx.fill();ctx.stroke()}
  if(jet>0)ctx.fillText('🔥',P.x+P.w/2,P.y+P.h+22)}
 function loop(){if(state==='play')step();draw();requestAnimationFrame(loop)}
+try{if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}
+let dip=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();dip=e;$('#inst').style.display='block'});
+$('#inst').onclick=()=>{if(dip){dip.prompt();dip=null;$('#inst').style.display='none'}};
+addEventListener('appinstalled',()=>{$('#inst').style.display='none'});
 apply();show('menu');loop();
 </script>
 </body>
