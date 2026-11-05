@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Doodle Jump</title>
+<link rel="stylesheet" href="style.css">
+<meta name="description" content="Doodle Jump — прыгай как можно выше: монстры, боссы, смена сезонов, скины и гонки с другом. Работает офлайн.">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Doodle Jump">
+<meta property="og:description" content="Прыгай как можно выше: монстры, боссы, смена сезонов, скины и гонки с другом.">
+<meta property="og:image" content="icon-512.png">
+<meta name="twitter:card" content="summary">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#bfe6ff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+</head>
+<body>
+<noscript><p style="padding:24px;text-align:center">Для игры нужен включённый JavaScript.</p></noscript>
+<div id="wrap"><div id="stage">
+<canvas id="c" width="360" height="640" role="img" aria-label="Игровое поле Doodle Jump"></canvas>
+<div class="sr" id="live" role="status" aria-live="polite"></div>
+<button id="pb" aria-label="Пауза">❚❚</button>
+<button id="fire" aria-label="Огонь">💥</button>
+
+<div class="screen show" id="menu"><div class="card">
+<h1>Doodle Jump</h1><p class="sub">Прыгай как можно выше</p>
+<div class="big" id="bestm">0</div><p class="sub" style="margin-top:0">рекорд</p><p class="sub" style="margin:0 0 4px">🪙 <b id="cn">0</b> монет</p>
+<button class="btn" id="play">Играть</button>
+<button class="btn ghost" data-open="online">👥 Играть с другом</button>
+<button class="btn ghost" data-open="quests">🏅 Задания и достижения</button>
+<button class="btn ghost" data-open="shop">Магазин скинов</button>
+<button class="btn ghost" data-open="settings">Настройки</button>
+<button class="btn ghost" id="inst" style="display:none">📲 Установить игру</button>
+<p class="hint" id="khint" style="display:none">← → или A D — движение · Пробел — выстрел · P — пауза</p>
+</div></div>
+
+<div class="screen" id="settings"><div class="card">
+<h2>Настройки</h2>
+<div class="row"><label>Управление</label><div class="seg" data-k="ctrl">
+<button data-v="touch">Касание</button><button data-v="drag">Палец</button><button data-v="tilt">Наклон</button></div>
+<p class="hint" id="chint"></p></div>
+<div class="row"><label>Чувствительность</label><input type="range" id="sens" min="1" max="10" aria-label="Чувствительность"></div>
+<div class="row"><label>Сложность</label><div class="seg" data-k="diff">
+<button data-v="easy">Лёгкая</button><button data-v="normal">Средняя</button><button data-v="hard">Сложная</button></div></div>
+<div class="row" style="display:none"><label>Стрельба</label><div class="seg" data-k="fire"><button data-v="btn">Кнопка 💥</button><button data-v="auto">Авто</button></div></div>
+<div class="row"><label>Вибрация</label><div class="seg" data-k="vib"><button data-v="on">Вкл</button><button data-v="off">Выкл</button></div></div>
+<div class="row"><label>Музыка</label><div class="seg" data-k="music"><button data-v="on">Вкл</button><button data-v="off">Выкл</button></div></div>
+<div class="row"><label>Тема</label><div class="seg" data-k="theme">
+<button data-v="auto">Авто</button><button data-v="light">Светлая</button><button data-v="dark">Тёмная</button></div></div>
+<div class="row"><label>Звук</label><div class="seg" data-k="sound"><button data-v="on">Вкл</button><button data-v="off">Выкл</button></div></div>
+<div class="row" style="display:none"><label>Персонаж</label><div class="seg sw" data-k="color"></div></div>
+<div class="row"><label>Прогресс</label>
+<button class="btn ghost" id="exp" style="margin-top:0">Сохранить в файл</button>
+<button class="btn ghost" id="imp">Загрузить из файла</button>
+<input type="file" id="impf" accept="application/json,.json" hidden>
+<p class="hint" id="dhint" role="status"></p></div>
+<button class="btn" id="back">Готово</button>
+</div></div>
+
+<div class="screen" id="shop"><div class="card"><h2>Магазин скинов</h2><p class="sub">🪙 <b id="cn2">0</b> · монеты собирай в игре</p><div id="grid"></div><button class="btn" id="sback">Назад</button></div></div>
+
+<div class='screen' id='quests'><div class='card'><h2>Задания дня</h2><div id='ql'></div><h2 style='margin-top:18px'>Достижения</h2><div id='al'></div><h2 style='margin-top:18px'>Статистика</h2><div id='stl'></div><button class='btn' id='qback'>Назад</button></div></div>
+<div class='screen' id='online'><div class='card'><h2>Игра с другом</h2><p class='sub' id='nst'>Создай комнату или введи код друга</p><div id='nbox'></div>
+<button class='btn' id='ncreate'>Создать комнату</button>
+<input id='ncode' placeholder='Код друга' maxlength='4' inputmode='numeric'>
+<button class='btn ghost' id='njoin'>Войти по коду</button>
+<button class='btn' id='ngo' style='display:none'>Начать гонку</button>
+<button class='btn ghost' id='nback'>Назад</button></div></div>
+
+<div class="screen" id="help"><div class="card help"><h2>Как играть</h2><div id="hbody"></div>
+<button class="btn" id="hgo">Понятно, играть!</button></div></div>
+
+<div class="screen" id="pause"><div class="card"><h2>Пауза</h2>
+<button class="btn" id="resume">Продолжить</button>
+<button class="btn ghost" id="tomenu1">В меню</button></div></div>
+
+<div class="screen" id="over"><div class="card"><h2>Игра окончена</h2>
+<div class="big" id="fs">0</div><p class="sub" style="margin:0">очки</p>
+<p class="sub" id="fb" style="margin-top:10px"></p>
+<button class="btn" id="again">Ещё раз</button>
+<button class="btn ghost" id="share">📤 Поделиться результатом</button>
+<button class="btn ghost" id="tomenu2">В меню</button></div></div>
+</div></div>
+
+<script src="app.js"></script>
+</body>
+</html>
