@@ -1,6 +1,6 @@
 /* Константы, настройки, начальное состояние игры и справочные данные (скины, биомы, задания).
    Подключается обычным <script> по порядку из index.html: общая глобальная область видимости. */
-const $=s=>document.querySelector(s),cv=$('#c'),ctx=cv.getContext('2d'),W=360,H=640,DPR=Math.min(window.devicePixelRatio||1,3);
+const $=s=>document.querySelector(s),cv=$('#c'),ctx=cv.getContext('2d'),W=360,H=640;let DPR=Math.min(window.devicePixelRatio||1,2);
 cv.width=W*DPR;cv.height=H*DPR;let rdt=1;
 let S={ctrl:'touch',sens:5,theme:'auto',sound:'on',color:0,diff:'normal',fire:'btn',vib:'on',music:'on',coins:0,owned:[0]};
 try{Object.assign(S,JSON.parse(localStorage.getItem('dj_s')||'{}'))}catch(e){}
@@ -281,12 +281,16 @@ $('#share').onclick=async()=>{
 
 /* Игровой цикл, пауза при сворачивании, service worker, установка PWA, запуск.
    Подключается обычным <script> по порядку из index.html: общая глобальная область видимости. */
-const STEP=1000/60;let lastT=0,acc=0;
+const STEP=1000/60;let lastT=0,acc=0,ft=0,fn=0;
 function loop(t){
  if(!lastT)lastT=t;
- const el=Math.min(t-lastT,100);lastT=t;rdt=el/STEP;acc+=el;
- while(acc>=STEP){if(state==='play')step();acc-=STEP}
- draw();requestAnimationFrame(loop)}
+ const raw=t-lastT,el=Math.min(raw,50);lastT=t;rdt=el/STEP;acc+=el;
+ let n=0;while(acc>=STEP&&n<3){if(state==='play')step();acc-=STEP;n++}
+ if(acc>=STEP)acc=0;
+ draw();
+ if(raw<250){ft+=raw;fn++;if(fn>=90){const avg=ft/fn;ft=0;fn=0;
+  if(avg>24&&DPR>1){DPR=Math.max(1,DPR-.5);cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR)}}}
+ requestAnimationFrame(loop)}
 document.addEventListener('visibilitychange',()=>{
  if(document.hidden){if(state==='play'&&!net.race)pause()}
  lastT=0;acc=0;keys={};dir=0;fx=null});
