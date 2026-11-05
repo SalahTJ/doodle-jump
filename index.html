@@ -147,7 +147,7 @@ function step(){
  for(const p of plats){if(p.sa>0)p.sa--;if(p.sq>0)p.sq--;if(p.dead){p.fall+=.7;p.y+=p.fall}else if(p.type==='m'){p.x+=p.dx;if(p.x<0||p.x+p.w>W)p.dx*=-1}}
  if(P.vy>0)for(const p of plats){if(p.dead)continue;const px=P.x+P.w/2;
   if(px>p.x-6&&px<p.x+p.w+6&&P.y+P.h>=p.y&&P.y+P.h-P.vy<=p.y+4){
-   if(p.type==='b'||p.type==='c'){p.dead=true;p.fall=0;sp(p.x+p.w/2,p.y,'200,170,120',8);snd(p.type==='c'?400:120,.2,p.type==='c'?'sine':'square',.05)}
+   if(p.type==='b'||p.type==='c'){p.dead=true;p.fall=0;spark(p.x+p.w/2,p.y,'200,170,120',8);snd(p.type==='c'?400:120,.2,p.type==='c'?'sine':'square',.05)}
    const sp=p.spring&&px>p.x+p.w/2-16&&px<p.x+p.w/2+16;P.vy=sp?-19:-11.5;p.sq=8;P.sq=10;if(sp){p.sa=14;shake=5;vib(30)}snd(sp?520:340,sp?.3:.15,'triangle');
    for(let i=0;i<(sp?14:6);i++)parts.push({x:px,y:p.y,vx:(Math.random()-.5)*4,vy:Math.random()*-2,l:1});break}}
  if(P.y<H*.4){const s=H*.4-P.y;P.y=H*.4;plats.forEach(p=>p.y+=s);mons.forEach(m=>m.y+=s);bul.forEach(b=>b.y+=s);ebs.forEach(e=>e.y+=s);items.forEach(i=>i.y+=s);bubbles.forEach(b=>{b.y+=s*b.z;if(b.y-b.r>H){b.y=-b.r;b.x=Math.random()*W}});score+=Math.round(s)}
@@ -155,7 +155,7 @@ function step(){
  let top=Math.min(...plats.map(p=>p.y));const g=GAP[S.diff];
  while(top>-20){top-=(44+Math.random()*Math.min(38,16+score/200))*g*B().gap;const np=mk(top,false);plats.push(np);spawn(np)}
  if(cool>0)cool--;if(S.fire==='auto')fire();bul.forEach(b=>b.y+=b.vy);bul=bul.filter(b=>b.y>-20);
- const L=Math.floor(score/2500);if(L!==lvl){lvl=L;boss=null;ebs=[];banner={t:140,s:'Уровень '+(L+1)+': '+B().n}}
+ const L=Math.floor(score/2500);if(L!==lvl&&!boss){lvl=L;ebs=[];banner={t:140,s:'Уровень '+(L+1)+': '+B().n}}
  if(banner&&--banner.t<=0)banner=null;
  mons.forEach(m=>{if(m.dead){m.y+=6;return}bul.forEach(b=>{if(b.x>m.x&&b.x<m.x+m.w&&b.y>m.y&&b.y<m.y+m.h){m.dead=1;b.y=-99;score+=100;boom(m.x+m.w/2,m.y+m.h/2,'232,80,91',14);snd(260,.2,'square',.06)}});if(m.dead)return;m.x+=m.dx;if(m.x<0||m.x+m.w>W)m.dx*=-1;m.ph+=.1;
   if(P.x+P.w>m.x+4&&P.x<m.x+m.w-4&&P.y+P.h>m.y&&P.y<m.y+m.h){
@@ -164,7 +164,7 @@ function step(){
    else if(state==='play')end()}});
  mons=mons.filter(m=>m.y<H+40);
  items=items.filter(i=>{const dx=P.x+P.w/2-i.x,dy=P.y+P.h/2-i.y;if(dx*dx+dy*dy<900){if(i.t==='c'){score+=50;S.coins++;save();sp(i.x,i.y,'255,210,63',6);vib(8);snd(700,.12,'sine',.06)}else if(i.t==='a'){ammo=Math.min(ammo+5,15);ub();snd(800,.15,'triangle')}else if(i.t==='j'){jet=110;vib(40);snd(300,.4,'sawtooth',.05)}else{sh=1;snd(500,.25,'triangle')}return false}return i.y<H+30});
- if(bossLvl!==lvl&&score>=lvl*2500+1800){bossLvl=lvl;const hp=Math.min(6+lvl*2,24);boss={x:W/2-40,y:70,w:80,h:64,hp,max:hp,dx:1.6+lvl*.15,t:0,hit:0};banner={t:140,s:'⚠ Босс!'}}
+ if(bossLvl!==lvl&&score>=lvl*2500+1800){bossLvl=lvl;ammo=Math.min(ammo+8,15);ub();const hp=Math.min(6+lvl*2,24);boss={x:W/2-40,y:70,w:80,h:64,hp,max:hp,dx:1.6+lvl*.15,t:0,hit:0};banner={t:140,s:'⚠ Босс!'}}
  if(boss){boss.t++;boss.x+=boss.dx;if(boss.x<0||boss.x+boss.w>W)boss.dx*=-1;boss.y=70+Math.sin(boss.t/20)*12;if(boss.hit>0)boss.hit--;
   if(boss.t%70===0)ebs.push({x:boss.x+boss.w/2,y:boss.y+boss.h,vy:3.2+lvl*.12});
   bul.forEach(b=>{if(boss&&b.x>boss.x&&b.x<boss.x+boss.w&&b.y>boss.y&&b.y<boss.y+boss.h){b.y=-99;boss.hp--;boss.hit=6;sp(b.x,boss.y+boss.h,'255,200,80',5);snd(200,.1,'square',.05);
@@ -200,6 +200,7 @@ function draw(){ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,W,H);if(shake>.3
  if(banner){ctx.globalAlpha=Math.min(1,banner.t/30);ctx.fillStyle=col.glass;rr(W/2-130,120,260,46,23);ctx.fill();ctx.fillStyle=col.ink;ctx.textAlign='center';ctx.font='800 20px system-ui';ctx.fillText(banner.s,W/2,150);ctx.globalAlpha=1}}}
 function vib(p){if(S.vib==='on'&&navigator.vibrate)try{navigator.vibrate(p)}catch(e){}}
 function sp(x,y,c,n){for(let i=0;i<n;i++)parts.push({x,y,vx:(Math.random()-.5)*8,vy:(Math.random()-.7)*7,l:1,c})}
+const spark=(...a)=>sp(...a);
 function boom(x,y,c,n){sp(x,y,c,n);shake=Math.max(shake,5);vib([40,30,40])}
 function tone(f,d,t,v){if(S.sound!=='on')return;try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();const o=ac.createOscillator(),g=ac.createGain();o.type=t;o.frequency.value=f;g.gain.setValueAtTime(v,ac.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);o.connect(g).connect(ac.destination);o.start();o.stop(ac.currentTime+d)}catch(e){}}
 const SC=[[0,2,4,7,9],[0,2,4,7,9],[0,3,5,7,10],[0,2,7,9,12]],PAT=[0,2,4,2,5,4,2,1];let ms=0;
