@@ -96,11 +96,43 @@ function apply(){
  const r=document.documentElement;S.theme==='auto'?r.removeAttribute('data-theme'):r.setAttribute('data-theme',S.theme);colors();
  document.querySelectorAll('.seg button').forEach(b=>b.classList.toggle('on',String(S[b.parentNode.dataset.k])===b.dataset.v));
  $('#sens').value=S.sens;
+ $('#chint').textContent = S.ctrl === 'tilt' ? (tiltOk ? 'Датчик работает ✓' : 'Наклоняйте устройство влево и вправо') : '';
 }
 function vibrate(ms){if(S.sound==='on'&&navigator.vibrate)try{navigator.vibrate(ms)}catch(e){}}
 function snd(f,d,t,v){if(S.sound!=='on')return;try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.type=t||'sine';o.frequency.setValueAtTime(f,ac.currentTime);o.frequency.exponentialRampToValueAtTime(f*1.8,ac.currentTime+d);g.gain.setValueAtTime(v||.07,ac.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);o.connect(g).connect(ac.destination);o.start();o.stop(ac.currentTime+d)}catch(e){}}
 
-document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{const k=b.parentNode.dataset.k,v=b.dataset.v;S[k]=v;save();apply()});
+let tiltOk=false,tiltSrc='';
+function tiltHint(){
+ if(S.ctrl==='tilt'){
+  $('#chint').textContent=tiltOk?'Датчик работает ✓':'Наклоняйте телефон влево/вправо';
+ }
+}
+function setT(v,src){if(tiltOk&&tiltSrc!==src)return;tilt=v;if(!tiltOk){tiltOk=true;tiltSrc=src;tiltHint()}}
+
+function askTilt(){
+ try {
+  if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+   DeviceOrientationEvent.requestPermission().then(response => {
+    if (response === 'granted') {
+     window.addEventListener('deviceorientation', e => { if (e.gamma != null) setT(e.gamma, 'o'); }, true);
+    }
+   }).catch(console.error);
+  } else {
+   window.addEventListener('deviceorientation', e => { if (e.gamma != null) setT(e.gamma, 'o'); }, true);
+   window.addEventListener('devicemotion', e => {
+    const a = e.accelerationIncludingGravity;
+    if (a && a.x != null && !(tiltOk && tiltSrc==='o')) setT(a.x * 3, 'm');
+   }, true);
+  }
+ } catch(e) { console.error(e); }
+}
+
+document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{
+ const k=b.parentNode.dataset.k,v=b.dataset.v;
+ S[k]=v;
+ if(k==='ctrl'&&v==='tilt') askTilt();
+ save(); apply();
+});
 $('#sens').oninput=e=>{S.sens=+e.target.value;save()};
 
 function show(id){
@@ -114,7 +146,8 @@ function show(id){
 
 document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{if(b.dataset.open==='shop')renderShop();show(b.dataset.open)});
 $('#back').onclick=$('#sback').onclick=$('#aback').onclick=$('#lback').onclick=()=>show('menu');
-$('#play').onclick=start;$('#again').onclick=start;
+$('#play').onclick=()=>{ askTilt(); start(); };
+$('#again').onclick=()=>{ askTilt(); start(); };
 $('#tomenu1').onclick=$('#tomenu2').onclick=()=>{state='menu';show('menu')};
 $('#pb').onclick=pause;$('#resume').onclick=()=>{state='play';show('')};
 function pause(){if(state==='play'){state='pause';show('pause')}else if(state==='pause'){state='play';show('')}}
@@ -172,6 +205,9 @@ function step(){
  if(d){P.vx+=d*.9*m*P.iceFriction-P.vx*.12}
  else if(S.ctrl==='touch'){P.vx+=dir*.9*m*P.iceFriction-P.vx*.12}
  else if(S.ctrl==='drag'){if(fx!==null){P.vx=Math.max(-14,Math.min(14,(fx-P.w/2-P.x)*.22*m))}else P.vx*=.8}
+ else if(S.ctrl==='tilt'){
+  P.vx+=(Math.max(-1,Math.min(1,tilt/18))*7*m-P.vx)*.25;
+ }
  
  P.vx=Math.max(-14,Math.min(14,P.vx));if(Math.abs(P.vx)>.6)P.face=P.vx>0?1:-1;
  P.x+=P.vx;if(P.x<-P.w)P.x=W;if(P.x>W)P.x=-P.w;
