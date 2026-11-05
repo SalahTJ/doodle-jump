@@ -1,4 +1,4 @@
-const VERSION='2';
+const VERSION='3';
 const C='dj-v'+VERSION;
 const PEER='https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js';
 const FILES=['./','index.html','manifest.json','icon-192.png','icon-512.png'];

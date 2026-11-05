@@ -43,6 +43,13 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .help p{margin:0 0 12px;text-align:left;font-size:15px;line-height:1.35}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
+<meta name="description" content="Doodle Jump — прыгай как можно выше: монстры, боссы, смена сезонов, скины и гонки с другом. Работает офлайн.">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Doodle Jump">
+<meta property="og:description" content="Прыгай как можно выше: монстры, боссы, смена сезонов, скины и гонки с другом.">
+<meta property="og:image" content="icon-512.png">
+<meta name="twitter:card" content="summary">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="theme-color" content="#bfe6ff">
@@ -51,6 +58,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
 </head>
 <body>
+<noscript><p style="padding:24px;text-align:center">Для игры нужен включённый JavaScript.</p></noscript>
 <div id="wrap"><div id="stage">
 <canvas id="c" width="360" height="640" role="img" aria-label="Игровое поле Doodle Jump"></canvas>
 <div class="sr" id="live" role="status" aria-live="polite"></div>
@@ -84,12 +92,17 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 <button data-v="auto">Авто</button><button data-v="light">Светлая</button><button data-v="dark">Тёмная</button></div></div>
 <div class="row"><label>Звук</label><div class="seg" data-k="sound"><button data-v="on">Вкл</button><button data-v="off">Выкл</button></div></div>
 <div class="row" style="display:none"><label>Персонаж</label><div class="seg sw" data-k="color"></div></div>
+<div class="row"><label>Прогресс</label>
+<button class="btn ghost" id="exp" style="margin-top:0">Сохранить в файл</button>
+<button class="btn ghost" id="imp">Загрузить из файла</button>
+<input type="file" id="impf" accept="application/json,.json" hidden>
+<p class="hint" id="dhint" role="status"></p></div>
 <button class="btn" id="back">Готово</button>
 </div></div>
 
 <div class="screen" id="shop"><div class="card"><h2>Магазин скинов</h2><p class="sub">🪙 <b id="cn2">0</b> · монеты собирай в игре</p><div id="grid"></div><button class="btn" id="sback">Назад</button></div></div>
 
-<div class='screen' id='quests'><div class='card'><h2>Задания дня</h2><div id='ql'></div><h2 style='margin-top:18px'>Достижения</h2><div id='al'></div><button class='btn' id='qback'>Назад</button></div></div>
+<div class='screen' id='quests'><div class='card'><h2>Задания дня</h2><div id='ql'></div><h2 style='margin-top:18px'>Достижения</h2><div id='al'></div><h2 style='margin-top:18px'>Статистика</h2><div id='stl'></div><button class='btn' id='qback'>Назад</button></div></div>
 <div class='screen' id='online'><div class='card'><h2>Игра с другом</h2><p class='sub' id='nst'>Создай комнату или введи код друга</p><div id='nbox'></div>
 <button class='btn' id='ncreate'>Создать комнату</button>
 <input id='ncode' placeholder='Код друга' maxlength='4' inputmode='numeric'>
@@ -108,6 +121,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 <div class="big" id="fs">0</div><p class="sub" style="margin:0">очки</p>
 <p class="sub" id="fb" style="margin-top:10px"></p>
 <button class="btn" id="again">Ещё раз</button>
+<button class="btn ghost" id="share">📤 Поделиться результатом</button>
 <button class="btn ghost" id="tomenu2">В меню</button></div></div>
 </div></div>
 
@@ -139,7 +153,7 @@ function askTilt(){try{[window.DeviceOrientationEvent,window.DeviceMotionEvent].
 addEventListener('deviceorientation',e=>{if(e.gamma!=null)setT(e.gamma,'o')});
 addEventListener('devicemotion',e=>{const a=e.accelerationIncludingGravity;if(a&&a.x!=null&&!(tiltOk&&tiltSrc==='o'))setT((isIOS?1:-1)*a.x/9.8*45,'m')});
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('show',s.id===id));$('#pb').style.display=state==='play'&&!net.race?'block':'none';$('#fire').style.display=state==='play'&&S.fire==='btn'?'block':'none';$('#bestm').textContent=best;$('#cn').textContent=S.coins;$('#cn2').textContent=S.coins;
- if(id==='over')$('#live').textContent='Игра окончена. Очки: '+score;
+ if(id==='over'){$('#live').textContent='Игра окончена. Очки: '+score;$('#share').style.display=net.race?'none':'block';$('#share').textContent='📤 Поделиться результатом'}
  if(id){const t=document.querySelector('#'+id+' button');if(t)try{t.focus({preventScroll:true})}catch(e){}}}
 let from='menu';
 document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{from=state;if(b.dataset.open==='online'&&!net.on)ns('Создай комнату или введи код друга');if(b.dataset.open==='quests')renderQ();if(b.dataset.open==='shop')renderShop();show(b.dataset.open)});
@@ -149,6 +163,36 @@ function go(){net.race=false;if(!S.seen){helpShow();return}start()}
 function helpShow(){const l=[['🎮',HINT[S.ctrl]+(FINE?'. Также: ← → или A D':'')],['🪙','Собирай монеты — за них открываются скины'],['💥','Стреляй по монстрам, когда есть патроны'+(FINE?' (Пробел)':'')],['⚠️','Не падай вниз и обходи монстров']];
  $('#hbody').innerHTML=l.map(x=>'<p>'+x[0]+' '+x[1]+'</p>').join('');show('help')}
 $('#hgo').onclick=()=>{S.seen=1;save();start()};
+const dh=t=>{$('#dhint').textContent=t};
+async function exportData(){chk();
+ const data={app:'doodle-jump',v:1,date:new Date().toISOString(),best,coins:S.coins,owned:S.owned,color:S.color,st:S.st};
+ const name='doodle-jump-progress.json',blob=new Blob([JSON.stringify(data,null,1)],{type:'application/json'});
+ try{const f=new File([blob],name,{type:'application/json'});
+  if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'Doodle Jump: прогресс'});dh('Файл готов ✓');return}}catch(e){if(e&&e.name==='AbortError')return}
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(a.href),4000);dh('Файл сохранён ✓')}
+function importData(txt){
+ let d;try{d=JSON.parse(txt)}catch(e){return 'Это не файл прогресса'}
+ if(!d||d.app!=='doodle-jump'||d.v!==1)return 'Это не файл прогресса Doodle Jump';
+ const num=(x,max)=>Number.isFinite(x)&&x>=0&&x<=max?Math.floor(x):null;
+ const coins=num(d.coins,1e7),bst=num(d.best,1e9);
+ if(coins===null||bst===null||!Array.isArray(d.owned)||!d.st||typeof d.st!=='object')return 'Файл повреждён';
+ const owned=[...new Set([0,...d.owned.filter(i=>Number.isInteger(i)&&i>=0&&i<COLORS.length)])];
+ const st={kills:0,coins:0,bosses:0,games:0,shots:0,wins:0,best:0};
+ for(const k in st){const v=num(d.st[k],1e9);if(v!==null)st[k]=v}
+ if(!confirm('Заменить текущий прогресс (монеты, скины, статистику) данными из файла?'))return 'Отменено';
+ S.coins=coins;S.owned=owned;S.st=st;S.color=owned.includes(d.color)?d.color:0;
+ best=Math.max(best,bst);try{localStorage.setItem('dj_best',best)}catch(e){}
+ save();show('settings');return 'Прогресс загружен ✓'}
+$('#exp').onclick=exportData;
+$('#imp').onclick=()=>$('#impf').click();
+$('#impf').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+ if(f.size>200000){dh('Файл слишком большой');return}
+ f.text().then(t=>dh(importData(t))).catch(()=>dh('Не удалось прочитать файл'))};
+$('#share').onclick=async()=>{
+ const text='Я набрал '+score+' очков в Doodle Jump! 🐥 Сможешь больше?',url=location.href.split('#')[0];
+ try{if(navigator.share){await navigator.share({title:'Doodle Jump',text,url});return}}catch(e){if(e&&e.name==='AbortError')return}
+ try{await navigator.clipboard.writeText(text+' '+url);$('#share').textContent='Скопировано ✓'}catch(e){$('#share').textContent='Не удалось скопировать'}};
 $('#play').onclick=go;
 if(FINE)$('#khint').style.display='block';
 document.querySelectorAll('.screen').forEach(s=>{s.setAttribute('role','dialog');s.setAttribute('aria-modal','true');const h=s.querySelector('h1,h2');if(h){h.id=h.id||s.id+'-t';s.setAttribute('aria-labelledby',h.id)}});
@@ -285,7 +329,9 @@ function evMax(v){chk();const o=S.st.best;if(v>o){S.st.best=v;AC.forEach(a=>{if(
  S.dq.q.forEach((q,i)=>{if(QP[q][1]==='score'&&!S.dq.x[i]){S.dq.p[i]=Math.max(S.dq.p[i],v);qd(i)}});save()}
 function renderQ(){chk();const row=(t,p,g,ok)=>`<div class='qr${ok?' ok':''}'><span>${t}</span><b>${Math.min(p,g)}/${g}</b><div class='qb'><i style='width:${Math.min(100,p/g*100)}%'></i></div></div>`;
  $('#ql').innerHTML=S.dq.q.map((q,i)=>row(QP[q][0]+' (+'+QP[q][3]+' 🪙)',S.dq.p[i],QP[q][2],S.dq.x[i])).join('');
- $('#al').innerHTML=AC.map(a=>row(a[0],S.st[a[1]]||0,a[2],(S.st[a[1]]||0)>=a[2])).join('')}
+ $('#al').innerHTML=AC.map(a=>row(a[0],S.st[a[1]]||0,a[2],(S.st[a[1]]||0)>=a[2])).join('');
+ const SL=[['Лучший счёт','best'],['Игр сыграно','games'],['Монстров побеждено','kills'],['Боссов побеждено','bosses'],['Монет собрано','coins'],['Выстрелов','shots'],['Побед в гонках','wins']];
+ $('#stl').innerHTML=SL.map(x=>`<div class='qr'><span>${x[0]}</span><b style='font-size:14px;color:inherit'>${(S.st[x[1]]||0).toLocaleString('ru-RU')}</b></div>`).join('')}
 $('#qback').onclick=()=>show('menu');
 function ub(){const f=$('#fire');f.textContent='💥'+(ammo>0?' '+ammo:'');f.style.opacity=ammo>0?1:.4}
 function fire(){if(state!=='play'||cool>0||ammo<=0)return;ammo--;ub();ev('shots');bul.push({x:P.x+P.w/2,y:P.y,vy:-11});cool=16;snd(900,.08,'square',.04)}
