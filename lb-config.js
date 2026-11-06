@@ -1,4 +1,5 @@
-// Адрес базы Firebase Realtime Database для таблицы лидеров.
+// Данные проекта Supabase для таблицы лидеров.
 // Пока пусто: кнопка «Таблица лидеров» в игре скрыта.
-// Пример: const LB_URL='https://my-doodle-default-rtdb.europe-west1.firebasedatabase.app';
-const LB_URL='';
+// SB_URL — Project URL (вида https://abcdxyz.supabase.co), SB_KEY — публичный ключ (anon / publishable).
+const SB_URL='';
+const SB_KEY='';
