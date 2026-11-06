@@ -33,6 +33,7 @@
 <button class="btn" id="play">Играть</button>
 <button class="btn ghost" data-open="online">👥 Играть с другом</button>
 <button class="btn ghost" data-open="quests">🏅 Задания и достижения</button>
+<button class="btn ghost" id="lbbtn" data-open="lb" style="display:none">🏆 Таблица лидеров</button>
 <button class="btn ghost" data-open="shop">Магазин скинов</button>
 <button class="btn ghost" data-open="settings">Настройки</button>
 <button class="btn ghost" id="inst" style="display:none">📲 Установить игру</button>
@@ -75,6 +76,13 @@
 <div class="screen" id="help"><div class="card help"><h2>Как играть</h2><div id="hbody"></div>
 <button class="btn" id="hgo">Понятно, играть!</button></div></div>
 
+<div class="screen" id="lb"><div class="card"><h2>Таблица лидеров</h2>
+<div id="lbl" role="status">Загрузка…</div>
+<div class="row"><label for="lbname">Твоё имя</label><input id="lbname" maxlength="16" placeholder="Имя" autocomplete="nickname"></div>
+<button class="btn" id="lbsend">Отправить рекорд</button>
+<p class="hint" id="lbhint" role="status"></p>
+<button class="btn ghost" id="lbback">Назад</button></div></div>
+
 <div class="screen" id="pause"><div class="card"><h2>Пауза</h2>
 <button class="btn" id="resume">Продолжить</button>
 <button class="btn ghost" id="tomenu1">В меню</button></div></div>
@@ -87,6 +95,7 @@
 <button class="btn ghost" id="tomenu2">В меню</button></div></div>
 </div></div>
 
+<script src="lb-config.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

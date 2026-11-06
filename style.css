@@ -35,3 +35,9 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .help p{margin:0 0 12px;text-align:left;font-size:15px;line-height:1.35}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+#lbname{width:100%;box-sizing:border-box;padding:12px;border-radius:14px;border:1.5px solid var(--line);background:transparent;color:var(--ink);font:600 16px system-ui}
+#lbl{text-align:left;margin:0 0 10px;font-size:14px;color:var(--dim)}
+.lbr{display:flex;gap:8px;align-items:center;padding:6px 8px;border-radius:10px;font-size:14px;color:var(--ink)}
+.lbr b{width:24px;color:var(--dim)}.lbr span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lbr em{font-style:normal;font-weight:700}
+.lbr.me{background:var(--line)}

@@ -1,5 +1,6 @@
-const VERSION='5';
+const VERSION='6';
 const C='dj-v'+VERSION;
+const OPTIONAL=['lb-config.js'];
 const PEER='https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js';
 const FILES=['./','index.html','style.css','app.js','manifest.json','icon-192.png','icon-512.png'];
 
@@ -7,6 +8,7 @@ self.addEventListener('install',e=>{
  e.waitUntil((async()=>{
   const c=await caches.open(C);
   await c.addAll(FILES);
+  for(const f of OPTIONAL){try{await c.add(f)}catch(_){}}   // необязательные файлы: их отсутствие не ломает установку
   // PeerJS is cross-origin: cache it as an opaque response; failure must not block install
   try{await c.put(PEER,await fetch(PEER,{mode:'no-cors'}))}catch(_){}
   await self.skipWaiting();

@@ -232,7 +232,7 @@ function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.to
  if(id==='over'){$('#live').textContent='Игра окончена. Очки: '+score;$('#share').style.display=net.race?'none':'block';$('#share').textContent='📤 Поделиться результатом'}
  if(id){const t=document.querySelector('#'+id+' button');if(t)try{t.focus({preventScroll:true})}catch(e){}}}
 let from='menu';
-document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{from=state;if(b.dataset.open==='online'&&!net.on)ns('Создай комнату или введи код друга');if(b.dataset.open==='quests')renderQ();if(b.dataset.open==='shop')renderShop();show(b.dataset.open)});
+document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{from=state;if(b.dataset.open==='online'&&!net.on)ns('Создай комнату или введи код друга');if(b.dataset.open==='quests')renderQ();if(b.dataset.open==='shop')renderShop();if(b.dataset.open==='lb')lbOpen();show(b.dataset.open)});
 $('#back').onclick=()=>show('menu');
 function go(){net.race=false;if(!S.seen){helpShow();return}start()}
 function helpShow(){const l=[['🎮',HINT[S.ctrl]+(FINE?'. Также: ← → или A D':'')],['🪙','Собирай монеты — за них открываются скины'],['💥','Стреляй по монстрам, когда есть патроны'+(FINE?' (Пробел)':'')],['⚠️','Не падай вниз и обходи монстров']];
@@ -278,6 +278,41 @@ $('#share').onclick=async()=>{
  const text='Я набрал '+score+' очков в Doodle Jump! 🐥 Сможешь больше?',url=location.href.split('#')[0];
  try{if(navigator.share){await navigator.share({title:'Doodle Jump',text,url});return}}catch(e){if(e&&e.name==='AbortError')return}
  try{await navigator.clipboard.writeText(text+' '+url);$('#share').textContent='Скопировано ✓'}catch(e){$('#share').textContent='Не удалось скопировать'}};
+
+/* Таблица лидеров на Firebase Realtime Database (REST). Адрес базы задаётся в lb-config.js.
+   Подключается обычным <script> по порядку из index.html: общая глобальная область видимости. */
+const LBU=(typeof LB_URL==='string'?LB_URL.trim():'').replace(/\/+$/,'');
+function lbClean(n){return String(n||'').replace(/[\u0000-\u001f\u007f<>]/g,'').replace(/\s+/g,' ').trim().slice(0,16)}
+function lbId(){if(!/^[a-z0-9]{10,40}$/.test(S.pid||'')){const a=new Uint8Array(12);crypto.getRandomValues(a);S.pid=[...a].map(x=>(x%36).toString(36)).join('');save()}return S.pid}
+async function lbFetch(path,opt){const c=new AbortController(),t=setTimeout(()=>c.abort(),8000);try{return await fetch(LBU+path,Object.assign({signal:c.signal},opt))}finally{clearTimeout(t)}}
+async function lbLoad(){
+ const box=$('#lbl');box.textContent='Загрузка…';
+ try{const r=await lbFetch('/scores.json?orderBy=%22score%22&limitToLast=20');
+  if(!r.ok)throw new Error('http');const d=await r.json()||{};
+  const rows=Object.entries(d).filter(([k,v])=>v&&typeof v.score==='number').map(([k,v])=>({id:k,name:lbClean(v.name)||'Игрок',score:v.score})).sort((a,b)=>b.score-a.score);
+  box.textContent='';
+  if(!rows.length){box.textContent='Пока никого нет. Будь первым!';return}
+  rows.forEach((x,i)=>{const row=document.createElement('div');row.className='lbr'+(x.id===S.pid?' me':'');
+   const n=document.createElement('b');n.textContent=i+1;
+   const s=document.createElement('span');s.textContent=x.name;
+   const p=document.createElement('em');p.textContent=x.score.toLocaleString('ru-RU');
+   row.append(n,s,p);box.appendChild(row)})
+ }catch(e){box.textContent='Нет связи с таблицей. Проверь интернет'}}
+function lbOpen(){
+ $('#lbname').value=S.name||'';$('#lbhint').textContent=best>0?'':'Сыграй хотя бы раз, чтобы отправить рекорд';
+ $('#lbsend').textContent='Отправить рекорд'+(best>0?' ('+best+')':'');$('#lbsend').disabled=best<=0;lbLoad()}
+$('#lbsend').onclick=async()=>{
+ const name=lbClean($('#lbname').value),h=$('#lbhint'),btn=$('#lbsend');
+ if(name.length<2){h.textContent='Введи имя (минимум 2 символа)';return}
+ S.name=name;save();btn.disabled=true;h.textContent='Отправляем…';
+ try{const r=await lbFetch('/scores/'+lbId()+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,score:best,t:Date.now()})});
+  if(r.ok)h.textContent='Рекорд отправлен ✓';
+  else if(r.status===401||r.status===403)h.textContent='В таблице уже есть такой или лучший результат';
+  else h.textContent='Не удалось отправить'
+ }catch(e){h.textContent='Нет связи. Попробуй позже'}
+ btn.disabled=best<=0;lbLoad()};
+$('#lbback').onclick=()=>show('menu');
+if(LBU)$('#lbbtn').style.display='block';
 
 /* Игровой цикл, пауза при сворачивании, service worker, установка PWA, запуск.
    Подключается обычным <script> по порядку из index.html: общая глобальная область видимости. */
