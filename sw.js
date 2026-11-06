@@ -1,4 +1,4 @@
-const VERSION='8';
+const VERSION='9';
 const C='dj-v'+VERSION;
 const OPTIONAL=['lb-config.js'];
 const PEER='https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js';

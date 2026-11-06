@@ -2,9 +2,13 @@
    Подключается обычным <script> по порядку из index.html: общая глобальная область видимости. */
 const $=s=>document.querySelector(s),cv=$('#c'),ctx=cv.getContext('2d'),W=360,H=640;let DPR=Math.min(window.devicePixelRatio||1,2);
 cv.width=W*DPR;cv.height=H*DPR;let rdt=1;
-let S={lang:'auto',ctrl:'touch',sens:5,theme:'auto',sound:'on',color:0,diff:'normal',fire:'btn',vib:'on',music:'on',coins:0,owned:[0]};
+let S={lang:'auto',mode:'endless',ctrl:'touch',sens:5,theme:'auto',sound:'on',color:0,diff:'normal',fire:'btn',vib:'on',music:'on',coins:0,owned:[0]};
 try{Object.assign(S,JSON.parse(localStorage.getItem('dj_s')||'{}'))}catch(e){}
 let best=0;try{best=+localStorage.getItem('dj_best')||0}catch(e){}
+/* Режимы: endless — бесконечный без боссов, boss — с боссами. Рекорды ведутся отдельно (S.bm); best — лучший из всех, он идёт в таблицу лидеров.
+   Старый рекорд набран в игре с боссами, поэтому достаётся режиму boss. */
+if(!S.bm||typeof S.bm!=='object')S.bm={endless:0,boss:best};
+let gm='endless';
 const save=()=>{try{localStorage.setItem('dj_s',JSON.stringify(S))}catch(e){}};
 const COLORS=[['#8de86a','#3fa02b'],['#ffb366','#e07b2a'],['#c3cbd9','#7d8ba3'],['#ffffff','#c9d3ff'],['#4a5470','#1c2233'],['#ffffff','#9fb4d8'],['#ff8a65','#c2412a'],['#ffe6f7','#c79bff']];
 const PRICE=[0,10,25,45,70,100,130,160],ICON=['🐥','🐱','🤖','👻','🐧','👨‍🚀','🐲','🦄'],NAMES=['Птенец','Кот','Робот','Призрак','Пингвин','Космонавт','Дракон','Единорог'],OLD=['Зелёный','Розовый','Синий','Золотой','Фиолетовый','Ниндзя','Космонавт','Король'];
@@ -43,6 +47,7 @@ const EX={
 'Начать гонку':'Start race','Как играть':'How to play','Понятно, играть!':'Got it, let’s play!','Таблица лидеров':'Leaderboard',
 'Твоё имя':'Your name','Пауза':'Paused','Продолжить':'Resume','В меню':'Menu','Игра окончена':'Game over','очки':'points',
 'Ещё раз':'Play again','📤 Поделиться результатом':'📤 Share result','Игровое поле Doodle Jump':'Doodle Jump game field','Огонь':'Fire','Имя':'Name',
+'Бесконечный':'Endless','без боссов':'no bosses','С боссами':'Boss mode','босс на каждом уровне':'a boss every level','Режим':'Mode','С другом':'With a friend','Задания':'Quests','Рейтинг':'Ranking','Скины':'Skins','♾️ Бесконечный':'♾️ Endless','👹 С боссами':'👹 Boss mode',
 'Игрок':'Player','Выбран':'Selected','Выбрать':'Select','Реванш':'Rematch','Ничья':'Draw',
 'Птенец':'Chick','Кот':'Cat','Робот':'Robot','Призрак':'Ghost','Пингвин':'Penguin','Космонавт':'Astronaut','Дракон':'Dragon','Единорог':'Unicorn'
 };
@@ -194,11 +199,12 @@ function renderShop(){const g=$('#grid');g.innerHTML='';COLORS.forEach((c,i)=>{c
 function mk(y,easy){const t=Math.random(),h=Math.min(hgt/1500,1)*(DF()==='hard'?1.4:DF()==='easy'?.6:1);let type='n';
  if(!easy){if(t<.12+h*.12)type='m';else if(t<.26+h*.2)type=glv()%BIO.length===3?'c':'b';else if(glv()%BIO.length===3&&t>.7)type='c'}
  return{x:Math.random()*(W-70),y,w:70,type,dx:(1+Math.random()*1.4)*(Math.random()<.5?-1:1),dead:false,spring:!easy&&type==='n'&&Math.random()<.1}}
-function start(){askTilt();score=0;hgt=0;ev('games');parts=[];bul=[];ammo=0;ub();boss=null;bossLvl=-1;ebs=[];cool=0;mons=[];items=[];jet=0;sh=0;lvl=0;banner={t:120,s:'Уровень 1: Весна'};P={x:W/2-18,y:H-120,vx:0,vy:-11,w:36,h:40,face:1};
+function start(){askTilt();gm=net.race||S.mode==='boss'?'boss':'endless';score=0;hgt=0;ev('games');parts=[];bul=[];ammo=0;ub();boss=null;bossLvl=-1;ebs=[];cool=0;mons=[];items=[];jet=0;sh=0;lvl=0;banner={t:120,s:'Уровень 1: Весна'};P={x:W/2-18,y:H-120,vx:0,vy:-11,w:36,h:40,face:1};
  plats=[{x:W/2-35,y:H-60,w:70,type:'n',dx:0,dead:false,spring:false}];gen(()=>{for(let y=H-130;y>-H;y-=60)plats.push(mk(y,y>H-300))});
  state='play';show('')}
-function end(){state='over';vib([80,40,120]);shake=8;evMax(score);snd(220,.5,'sawtooth',.06);const nb=score>best;if(nb){best=score;try{localStorage.setItem('dj_best',best)}catch(e){}}
- $('#fs').textContent=score;$('#fb').textContent=nb?'🎉 Новый рекорд!':'Рекорд: '+best;if(net.race){net.me=true;nsend({t:'f',v:score});res()}else{$('#again').textContent='Ещё раз';$('#again').disabled=false}show('over');if((nb||S.lbpend)&&!net.race)lbAuto(nb)}
+function end(){state='over';vib([80,40,120]);shake=8;evMax(score);snd(220,.5,'sawtooth',.06);const pm=S.bm[gm]||0,nbm=score>pm;if(nbm){S.bm[gm]=score;save()}
+ const nb=score>best;if(nb){best=score;try{localStorage.setItem('dj_best',best)}catch(e){}}
+ $('#fs').textContent=score;$('#fb').textContent=nbm?'🎉 Новый рекорд!':'Рекорд: '+pm;$('#gmode').textContent=net.race?'':(gm==='boss'?'👹 С боссами':'♾️ Бесконечный');if(net.race){net.me=true;nsend({t:'f',v:score});res()}else{$('#again').textContent='Ещё раз';$('#again').disabled=false}show('over');if((nb||S.lbpend)&&!net.race)lbAuto(nb)}
 function step(){
  const m=.6+S.sens*.14;let d=0;if(keys.arrowleft||keys.a)d=-1;if(keys.arrowright||keys.d)d=1;
  if(d){P.vx+=d*.9*m-P.vx*.12}
@@ -230,7 +236,7 @@ function step(){
    else if(state==='play')end()}});
  mons=mons.filter(m=>m.y<H+40);
  items=items.filter(i=>{const dx=P.x+P.w/2-i.x,dy=P.y+P.h/2-i.y;if(dx*dx+dy*dy<900){if(i.t==='c'){score+=50;S.coins++;save();ev('coins');sp(i.x,i.y,'255,210,63',6);vib(8);snd(700,.12,'sine',.06)}else if(i.t==='a'){ammo=Math.min(ammo+5,15);ub();snd(800,.15,'triangle')}else if(i.t==='j'){jet=110;vib(40);snd(300,.4,'sawtooth',.05)}else{sh=1;snd(500,.25,'triangle')}return false}return i.y<H+30});
- if(bossLvl!==lvl&&hgt>=lvl*2500+1800){bossLvl=lvl;ammo=Math.min(ammo+8,15);ub();const hp=Math.min(6+lvl*2,24);boss={x:W/2-40,y:70,w:80,h:64,hp,max:hp,dx:1.6+lvl*.15,t:0,hit:0};banner={t:140,s:'⚠ Босс!'}}
+ if(gm==='boss'&&bossLvl!==lvl&&hgt>=lvl*2500+1800){bossLvl=lvl;ammo=Math.min(ammo+8,15);ub();const hp=Math.min(6+lvl*2,24);boss={x:W/2-40,y:70,w:80,h:64,hp,max:hp,dx:1.6+lvl*.15,t:0,hit:0};banner={t:140,s:'⚠ Босс!'}}
  if(boss){boss.t++;boss.x+=boss.dx;if(boss.x<0||boss.x+boss.w>W)boss.dx*=-1;boss.y=70+Math.sin(boss.t/20)*12;if(boss.hit>0)boss.hit--;
   if(boss.t%70===0)ebs.push({x:boss.x+boss.w/2,y:boss.y+boss.h,vy:3.2+lvl*.12});
   bul.forEach(b=>{if(boss&&b.x>boss.x&&b.x<boss.x+boss.w&&b.y>boss.y&&b.y<boss.y+boss.h){b.y=-99;boss.hp--;boss.hit=6;sp(b.x,boss.y+boss.h,'255,200,80',5);snd(200,.1,'square',.05);
@@ -273,10 +279,20 @@ function draw(){ctx.setTransform(DPR,0,0,DPR,0,0);ctx.clearRect(0,0,W,H);if(RM.m
  else if(sk===6){ctx.strokeStyle='rgba(170,215,255,.95)';ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(-20,-44,40,42,18);ctx.stroke()}
  else if(sk===7){ctx.fillStyle='#ffd23f';ctx.strokeStyle='#b8860b';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-13,-38);ctx.lineTo(-13,-50);ctx.lineTo(-6,-43);ctx.lineTo(0,-53);ctx.lineTo(6,-43);ctx.lineTo(13,-50);ctx.lineTo(13,-38);ctx.closePath();ctx.fill();ctx.stroke()}
  ctx.restore();
- if(state==='play'||state==='pause'){ctx.fillStyle=col.glass;rr(12,12,Math.max(84,40+String(score).length*14),42,21);ctx.fill();ctx.fillStyle=col.ink;ctx.font='800 22px system-ui';ctx.textAlign='left';ctx.fillText(score,28,41);
- ctx.fillStyle=col.glass;rr(12,60,jet>0?225:195,24,12);ctx.fill();ctx.fillStyle=col.ink;ctx.font='600 12px system-ui';ctx.fillText(T('Ур. '+(lvl+1)+' · '+B().n+' · 🪙'+S.coins+(jet>0?'  🚀':'')),22,76);
- if(net.race){ctx.fillStyle=col.glass;rr(12,90,170,24,12);ctx.fill();ctx.fillStyle=col.ink;ctx.font='600 12px system-ui';ctx.textAlign='left';ctx.fillText(T('Друг: '+net.opp+(net.oppDead?' ✖':'')),22,106)}
- if(banner){ctx.globalAlpha=Math.min(1,banner.t/30);ctx.fillStyle=col.glass;rr(W/2-130,120,260,46,23);ctx.fill();ctx.fillStyle=col.ink;ctx.textAlign='center';ctx.font='800 20px system-ui';ctx.fillText(T(banner.s),W/2,150);ctx.globalAlpha=1}}}
+ if(state==='play'||state==='pause'){hud()}}
+function chip(x,y,txt,dot){ctx.font='700 12px system-ui';const w=ctx.measureText(txt).width+(dot?34:24),h=26;
+ ctx.save();ctx.shadowColor='rgba(0,0,0,.16)';ctx.shadowBlur=8;ctx.shadowOffsetY=2;ctx.fillStyle=col.glass;rr(x,y,w,h,13);ctx.fill();ctx.restore();
+ ctx.strokeStyle='rgba(255,255,255,.45)';ctx.lineWidth=1;rr(x,y,w,h,13);ctx.stroke();
+ let tx=x+12;if(dot){ctx.fillStyle=dot;ctx.beginPath();ctx.arc(x+14,y+13,5,0,7);ctx.fill();tx=x+25}
+ ctx.fillStyle=col.ink;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(txt,tx,y+13.5);ctx.textBaseline='alphabetic';return w}
+function hud(){
+ const sw=Math.max(96,48+String(score).length*15);
+ ctx.save();ctx.shadowColor='rgba(0,0,0,.2)';ctx.shadowBlur=12;ctx.shadowOffsetY=3;ctx.fillStyle=col.glass;rr(12,12,sw,46,23);ctx.fill();ctx.restore();
+ ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=1;rr(12,12,sw,46,23);ctx.stroke();
+ ctx.fillStyle=col.ink;ctx.font='900 25px system-ui';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(score,28,36);ctx.textBaseline='alphabetic';
+ const w=chip(12,66,T('Ур. '+(lvl+1)+' · '+B().n),B().tint);chip(12+w+6,66,'🪙 '+S.coins+(jet>0?'  🚀':''));
+ if(net.race)chip(12,98,T('Друг: '+net.opp+(net.oppDead?' ✖':'')));
+ if(banner){ctx.globalAlpha=Math.min(1,banner.t/30);ctx.save();ctx.shadowColor='rgba(0,0,0,.22)';ctx.shadowBlur=14;ctx.shadowOffsetY=4;ctx.fillStyle=col.glass;rr(W/2-135,126,270,50,25);ctx.fill();ctx.restore();ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=1;rr(W/2-135,126,270,50,25);ctx.stroke();ctx.fillStyle=col.ink;ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='800 20px system-ui';ctx.fillText(T(banner.s),W/2,152);ctx.textBaseline='alphabetic';ctx.globalAlpha=1}}
 function skin(i,c,f){i=Math.min(i,7);const g=ctx.createLinearGradient(0,-40,0,-4);g.addColorStop(0,c[0]);g.addColorStop(1,c[1]);
  ctx.shadowColor='rgba(0,0,0,.25)';ctx.shadowBlur=10;ctx.shadowOffsetY=4;ctx.fillStyle=g;ctx.strokeStyle=c[1];ctx.lineWidth=3;ctx.lineCap='round';ctx.lineJoin='round';
  const eye=(x,y,r)=>{ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(x+f*1.5,y,r,0,7);ctx.fill();ctx.fillStyle='#1c2433';ctx.beginPath();ctx.arc(x+f*3,y,r*.45,0,7);ctx.fill()};
@@ -324,15 +340,15 @@ function drawObjs(){drawBoss();ctx.textAlign='center';ctx.font='22px system-ui';
 function colors(){const s=getComputedStyle(document.documentElement);['sky1','sky2','ink','glass'].forEach(k=>col[k]=s.getPropertyValue('--'+k).trim())}
 function apply(){const r=document.documentElement;S.theme==='auto'?r.removeAttribute('data-theme'):r.setAttribute('data-theme',S.theme);colors();
  document.querySelectorAll('.seg button').forEach(b=>{const on=String(S[b.parentNode.dataset.k])===b.dataset.v;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
- $('#sens').value=S.sens;$('#chint').textContent=HINT[S.ctrl];tiltHint()}
+ $('#bestm').textContent=S.bm[S.mode]||0;$('#sens').value=S.sens;$('#chint').textContent=HINT[S.ctrl];tiltHint()}
 matchMedia('(prefers-color-scheme:dark)').addEventListener('change',colors);
 COLORS.forEach((c,i)=>{const b=document.createElement('button');b.dataset.v=i;b.style.background=`linear-gradient(135deg,${c[0]},${c[1]})`;b.setAttribute('aria-label','Цвет '+(i+1));document.querySelector('.sw').appendChild(b)});
 document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{const k=b.parentNode.dataset.k,v=b.dataset.v;S[k]=k==='color'?+v:v;if(k==='ctrl'&&v==='tilt')askTilt();save();apply()});
 $('#sens').oninput=e=>{S.sens=+e.target.value;save()};
-function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('show',s.id===id));$('#pb').style.display=state==='play'&&!net.race?'block':'none';$('#fire').style.display=state==='play'&&S.fire==='btn'?'block':'none';$('#bestm').textContent=best;$('#cn').textContent=S.coins;$('#cn2').textContent=S.coins;
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('show',s.id===id));$('#pb').style.display=state==='play'&&!net.race?'block':'none';$('#fire').style.display=state==='play'&&S.fire==='btn'?'block':'none';$('#bestm').textContent=S.bm[S.mode]||0;$('#cn').textContent=S.coins;$('#cn2').textContent=S.coins;
  if(id==='over'){$('#live').textContent='Игра окончена. Очки: '+score;$('#share').style.display=net.race?'none':'block';$('#lbover').style.display=LB_ON&&!net.race?'block':'none';$('#share').textContent='📤 Поделиться результатом'}
- if(id){const t=document.querySelector('#'+id+' button');if(t)try{t.focus({preventScroll:true})}catch(e){}}}
-let from='menu';
+ if(id&&usedKbd){const t=document.querySelector('#'+id+' button');if(t)try{t.focus({preventScroll:true})}catch(e){}}}
+let from='menu',usedKbd=false;addEventListener('keydown',()=>{usedKbd=true},true);addEventListener('pointerdown',()=>{usedKbd=false},true);
 document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{from=state;if(b.dataset.open==='online'&&!net.on)ns('Создай комнату или введи код друга');if(b.dataset.open==='quests')renderQ();if(b.dataset.open==='shop')renderShop();if(b.dataset.open==='lb')lbOpen();show(b.dataset.open)});
 $('#back').onclick=()=>show('menu');
 function go(){net.race=false;if(!S.seen){helpShow();return}start()}
@@ -351,7 +367,7 @@ function pause(){if(net.race)return;if(state==='play'){state='pause';show('pause
    Подключается обычным <script> по порядку из index.html: общая глобальная область видимости. */
 const dh=t=>{$('#dhint').textContent=t};
 async function exportData(){chk();
- const data={app:'doodle-jump',v:1,date:new Date().toISOString(),best,coins:S.coins,owned:S.owned,color:S.color,st:S.st};
+ const data={app:'doodle-jump',v:1,date:new Date().toISOString(),best,bm:S.bm,coins:S.coins,owned:S.owned,color:S.color,st:S.st};
  const name='doodle-jump-progress.json',blob=new Blob([JSON.stringify(data,null,1)],{type:'application/json'});
  try{const f=new File([blob],name,{type:'application/json'});
   if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:T('Doodle Jump: прогресс')});dh('Файл готов ✓');return}}catch(e){if(e&&e.name==='AbortError')return}
@@ -368,6 +384,7 @@ function importData(txt){
  for(const k in st){const v=num(d.st[k],1e9);if(v!==null)st[k]=v}
  if(!confirm('Заменить текущий прогресс (монеты, скины, статистику) данными из файла?'))return 'Отменено';
  S.coins=coins;S.owned=owned;S.st=st;S.color=owned.includes(d.color)?d.color:0;
+ const ib=d.bm&&typeof d.bm==='object'?d.bm:{boss:bst};S.bm={endless:Math.max(S.bm.endless||0,num(ib.endless,1e9)||0),boss:Math.max(S.bm.boss||0,num(ib.boss,1e9)||0)};
  best=Math.max(best,bst);try{localStorage.setItem('dj_best',best)}catch(e){}
  save();show('settings');return 'Прогресс загружен ✓'}
 $('#exp').onclick=exportData;
@@ -432,7 +449,7 @@ $('#lbsend').onclick=async()=>{
  }catch(e){h.textContent='Нет связи. Попробуй позже'}
  btn.disabled=best<=0;lbLoad()};
 $('#lbback').onclick=()=>show(from==='over'?'over':'menu');
-if(LB_ON)$('#lbbtn').style.display='block';
+if(LB_ON){$('#lbbtn').style.display='';$('.tiles').dataset.n=5}
 
 /* Игровой цикл, пауза при сворачивании, service worker, установка PWA, запуск.
    Подключается обычным <script> по порядку из index.html: общая глобальная область видимости. */

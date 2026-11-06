@@ -27,16 +27,20 @@
 <button id="pb" aria-label="Пауза">❚❚</button>
 <button id="fire" aria-label="Огонь">💥</button>
 
-<div class="screen show" id="menu"><div class="card">
-<h1>Doodle Jump</h1><p class="sub">Прыгай как можно выше</p>
-<div class="big" id="bestm">0</div><p class="sub" style="margin-top:0">рекорд</p><p class="sub" style="margin:0 0 4px">🪙 <b id="cn">0</b> монет</p>
+<div class="screen show" id="menu"><div class="card menu">
+<div class="brand"><img class="logo" src="icon-192.png" alt="" width="64" height="64"><div><h1>Doodle Jump</h1><p class="sub">Прыгай как можно выше</p></div></div>
+<div class="stats"><div class="chip"><span class="ci">🏆</span><b id="bestm">0</b><small>рекорд</small></div><div class="chip"><span class="ci">🪙</span><b id="cn">0</b><small>монет</small></div></div>
+<div class="seg modes" data-k="mode" role="group" aria-label="Режим">
+<button data-v="endless"><span class="mi">♾️</span><strong>Бесконечный</strong><small>без боссов</small></button>
+<button data-v="boss"><span class="mi">👹</span><strong>С боссами</strong><small>босс на каждом уровне</small></button></div>
 <button class="btn" id="play">Играть</button>
-<button class="btn ghost" data-open="online">👥 Играть с другом</button>
-<button class="btn ghost" data-open="quests">🏅 Задания и достижения</button>
-<button class="btn ghost" id="lbbtn" data-open="lb" style="display:none">🏆 Таблица лидеров</button>
-<button class="btn ghost" data-open="shop">Магазин скинов</button>
-<button class="btn ghost" data-open="settings">Настройки</button>
-<button class="btn ghost" id="inst" style="display:none">📲 Установить игру</button>
+<div class="tiles" data-n="4">
+<button class="tile" data-open="online"><span>👥</span>С другом</button>
+<button class="tile" data-open="quests"><span>🏅</span>Задания</button>
+<button class="tile" id="lbbtn" data-open="lb" style="display:none"><span>🏆</span>Рейтинг</button>
+<button class="tile" data-open="shop"><span>🛍️</span>Скины</button>
+<button class="tile" data-open="settings"><span>⚙️</span>Настройки</button></div>
+<button class="btn ghost small" id="inst" style="display:none">📲 Установить игру</button>
 <p class="hint" id="khint" style="display:none">← → или A D — движение · Пробел — выстрел · P — пауза</p>
 </div></div>
 
@@ -88,9 +92,10 @@
 <button class="btn" id="resume">Продолжить</button>
 <button class="btn ghost" id="tomenu1">В меню</button></div></div>
 
-<div class="screen" id="over"><div class="card"><h2>Игра окончена</h2>
+<div class="screen" id="over"><div class="card over"><h2>Игра окончена</h2>
+<p class="badge" id="gmode"></p>
 <div class="big" id="fs">0</div><p class="sub" style="margin:0">очки</p>
-<p class="sub" id="fb" style="margin-top:10px"></p>
+<p class="pill" id="fb"></p>
 <button class="btn" id="again">Ещё раз</button>
 <button class="btn ghost" id="share">📤 Поделиться результатом</button>
 <button class="btn ghost" id="lbover" data-open="lb" style="display:none">🏆 Таблица лидеров</button>
