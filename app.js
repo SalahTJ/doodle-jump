@@ -2,30 +2,123 @@
    Подключается обычным <script> по порядку из index.html: общая глобальная область видимости. */
 const $=s=>document.querySelector(s),cv=$('#c'),ctx=cv.getContext('2d'),W=360,H=640;let DPR=Math.min(window.devicePixelRatio||1,2);
 cv.width=W*DPR;cv.height=H*DPR;let rdt=1;
-let S={ctrl:'touch',sens:5,theme:'auto',sound:'on',color:0,diff:'normal',fire:'btn',vib:'on',music:'on',coins:0,owned:[0]};
+let S={lang:'auto',ctrl:'touch',sens:5,theme:'auto',sound:'on',color:0,diff:'normal',fire:'btn',vib:'on',music:'on',coins:0,owned:[0]};
 try{Object.assign(S,JSON.parse(localStorage.getItem('dj_s')||'{}'))}catch(e){}
 let best=0;try{best=+localStorage.getItem('dj_best')||0}catch(e){}
 const save=()=>{try{localStorage.setItem('dj_s',JSON.stringify(S))}catch(e){}};
-const COLORS=[['#8de86a','#3fa02b'],['#ffb366','#e07b2a'],['#c3cbd9','#7d8ba3'],['#ffffff','#c9d3ff'],['#4a5470','#1c2233'],['#ffffff','#9fb4d8']];
-const PRICE=[0,10,25,45,70,100],ICON=['🐥','🐱','🤖','👻','🐧','👨‍🚀'],NAMES=['Птенец','Кот','Робот','Призрак','Пингвин','Космонавт'],OLD=['Зелёный','Розовый','Синий','Золотой','Фиолетовый','Ниндзя','Космонавт','Король'];
+const COLORS=[['#8de86a','#3fa02b'],['#ffb366','#e07b2a'],['#c3cbd9','#7d8ba3'],['#ffffff','#c9d3ff'],['#4a5470','#1c2233'],['#ffffff','#9fb4d8'],['#ff8a65','#c2412a'],['#ffe6f7','#c79bff']];
+const PRICE=[0,10,25,45,70,100,130,160],ICON=['🐥','🐱','🤖','👻','🐧','👨‍🚀','🐲','🦄'],NAMES=['Птенец','Кот','Робот','Призрак','Пингвин','Космонавт','Дракон','Единорог'],OLD=['Зелёный','Розовый','Синий','Золотой','Фиолетовый','Ниндзя','Космонавт','Король'];
 const HINT={touch:'Держи левую или правую половину экрана',drag:'Двигай пальцем: персонаж едет за ним',tilt:'Наклоняй телефон влево и вправо'};
 let hgt=0,boss=null,bossLvl=-1,ebs=[],shake=0,ammo=0,mid=null,bul=[],cool=0,mons=[],items=[],jet=0,sh=0,lvl=0,banner=null,frame=0,col={},P,plats,parts=[],bubbles=[],score=0,state='menu',dir=0,fx=null,tilt=0,keys={},ac=null;
 for(let i=0;i<14;i++)bubbles.push({x:Math.random()*W,y:Math.random()*H,r:6+Math.random()*26,z:.15+Math.random()*.4});
 const FINE=matchMedia('(hover:hover) and (pointer:fine)').matches,RM=matchMedia('(prefers-reduced-motion:reduce)');
 const GAP={easy:.85,normal:1,hard:1.15};
-const BIO=[{n:'Весна',tint:'#7be0a0',a:.18,g:.42,w:0,gap:1},{n:'Лето',tint:'#ffd54a',a:.22,g:.42,w:0,gap:1.05},{n:'Осень',tint:'#e8742a',a:.3,g:.42,w:.9,gap:1},{n:'Зима',tint:'#cfe8ff',a:.4,g:.36,w:0,gap:1.1}];const OLDB=[{n:'Луг',tint:'#000',a:0,g:.42,w:0,gap:1},{n:'Облака',tint:'#ffffff',a:.35,g:.42,w:.9,gap:1.05},{n:'Космос',tint:'#120a40',a:.6,g:.3,w:0,gap:1.3}];
-const PC=[['#8de86a','#3fa02b'],['#c2e24f','#6fa01f'],['#f0a24a','#b8601f'],['#eef7ff','#9bc4e8']];const B=()=>BIO[lvl%4];
+const BIO=[{n:'Весна',tint:'#7be0a0',a:.18,g:.42,w:0,gap:1},{n:'Лето',tint:'#ffd54a',a:.22,g:.42,w:0,gap:1.05},{n:'Осень',tint:'#e8742a',a:.3,g:.42,w:.9,gap:1},{n:'Зима',tint:'#cfe8ff',a:.4,g:.36,w:0,gap:1.1},{n:'Ночь',tint:'#1b1f4a',a:.38,g:.42,w:0,gap:1.05}];const OLDB=[{n:'Луг',tint:'#000',a:0,g:.42,w:0,gap:1},{n:'Облака',tint:'#ffffff',a:.35,g:.42,w:.9,gap:1.05},{n:'Космос',tint:'#120a40',a:.6,g:.3,w:0,gap:1.3}];
+const PC=[['#8de86a','#3fa02b'],['#c2e24f','#6fa01f'],['#f0a24a','#b8601f'],['#eef7ff','#9bc4e8'],['#b8c4ff','#6a76c9']];const B=()=>BIO[lvl%BIO.length];
 const QP=[['Убей 5 монстров','kills',5,5],['Собери 30 монет','coins',30,6],['Победи босса','bosses',1,15],['Сделай 20 выстрелов','shots',20,4],['Набери 3000 очков','score',3000,8],['Сыграй 3 игры','games',3,5],['Выиграй гонку','wins',1,10]];
 const AC=[['Первые шаги','games',1],['Охотник','kills',50],['Богач','coins',200],['Убийца боссов','bosses',3],['Снайпер','shots',200],['Рекордсмен','best',5000],['Победитель','wins',3],['Ветеран','games',25]];
-const BOSS=['🐛','🐝','🦔','⛄'];
+const BOSS=['🐛','🐝','🦔','⛄','🦇'];
+
+/* Перевод интерфейса: русский и английский. Язык хранится в S.lang: auto | ru | en
+   (auto: русский для русских, украинских, белорусских и казахских браузеров, иначе английский).
+   Весь код игры написан по-русски; в английском режиме тексты переводятся на лету:
+   статические и динамические узлы DOM (через MutationObserver), подписи на canvas (через T()), prompt и confirm.
+   Как добавить текст: впишите русскую строку в EX (целиком) или в PT (фрагмент) с английским переводом.
+   Подключается обычным <script> по порядку из index.html: общая глобальная область видимости. */
+const EN=S.lang==='en'||(S.lang!=='ru'&&!/^(ru|uk|be|kk)/i.test(navigator.language||''));
+const LOC=EN?'en-US':'ru-RU';
+/* EX: строка целиком (после обрезки пробелов) */
+const EX={
+'Для игры нужен включённый JavaScript.':'JavaScript must be enabled to play.',
+'Прыгай как можно выше':'Jump as high as you can','рекорд':'best','монет':'coins','Играть':'Play',
+'👥 Играть с другом':'👥 Play with a friend','🏅 Задания и достижения':'🏅 Quests & achievements','🏆 Таблица лидеров':'🏆 Leaderboard',
+'Магазин скинов':'Skin shop','Настройки':'Settings','📲 Установить игру':'📲 Install game',
+'← → или A D — движение · Пробел — выстрел · P — пауза':'← → or A D to move · Space to shoot · P to pause',
+'Управление':'Controls','Касание':'Touch','Палец':'Finger','Наклон':'Tilt','Чувствительность':'Sensitivity',
+'Сложность':'Difficulty','Лёгкая':'Easy','Средняя':'Medium','Сложная':'Hard','Стрельба':'Shooting','Кнопка 💥':'Button 💥',
+'Авто':'Auto','Вибрация':'Vibration','Вкл':'On','Выкл':'Off','Музыка':'Music','Тема':'Theme','Светлая':'Light','Тёмная':'Dark',
+'Звук':'Sound','Персонаж':'Character','Язык':'Language','Прогресс':'Progress','Сохранить в файл':'Save to file','Загрузить из файла':'Load from file',
+'Готово':'Done','· монеты собирай в игре':'· collect coins in the game','Назад':'Back','Задания дня':'Daily quests','Достижения':'Achievements',
+'Статистика':'Statistics','Игра с другом':'Play with a friend','Создать комнату':'Create room','Войти по коду':'Join by code',
+'Начать гонку':'Start race','Как играть':'How to play','Понятно, играть!':'Got it, let’s play!','Таблица лидеров':'Leaderboard',
+'Твоё имя':'Your name','Пауза':'Paused','Продолжить':'Resume','В меню':'Menu','Игра окончена':'Game over','очки':'points',
+'Ещё раз':'Play again','📤 Поделиться результатом':'📤 Share result','Игровое поле Doodle Jump':'Doodle Jump game field','Огонь':'Fire','Имя':'Name',
+'Игрок':'Player','Выбран':'Selected','Выбрать':'Select','Реванш':'Rematch','Ничья':'Draw',
+'Птенец':'Chick','Кот':'Cat','Робот':'Robot','Призрак':'Ghost','Пингвин':'Penguin','Космонавт':'Astronaut','Дракон':'Dragon','Единорог':'Unicorn'
+};
+/* PT: фрагменты внутри строк (подставляются от самых длинных к коротким) */
+const PT={
+'Держи левую или правую половину экрана':'Hold the left or right half of the screen',
+'Двигай пальцем: персонаж едет за ним':'Drag your finger: the character follows it',
+'Наклоняй телефон влево и вправо':'Tilt your phone left and right',
+'. Также: ← → или A D':'. Also: ← → or A D',
+'Собирай монеты — за них открываются скины':'Collect coins to unlock skins',
+'Стреляй по монстрам, когда есть патроны':'Shoot monsters when you have ammo',' (Пробел)':' (Space)',
+'Не падай вниз и обходи монстров':'Don’t fall, and dodge the monsters',
+'Создай комнату или введи код друга':'Create a room or enter your friend’s code',
+'Весна':'Spring','Лето':'Summer','Осень':'Autumn','Зима':'Winter','Ночь':'Night',
+'Убей 5 монстров':'Kill 5 monsters','Собери 30 монет':'Collect 30 coins','Победи босса':'Defeat a boss','Сделай 20 выстрелов':'Fire 20 shots',
+'Набери 3000 очков':'Score 3000 points','Сыграй 3 игры':'Play 3 games','Выиграй гонку':'Win a race',
+'Первые шаги':'First steps','Охотник':'Hunter','Богач':'Rich','Убийца боссов':'Boss slayer','Снайпер':'Sharpshooter',
+'Рекордсмен':'Record holder','Победитель':'Winner','Ветеран':'Veteran',
+'Лучший счёт':'Best score','Игр сыграно':'Games played','Монстров побеждено':'Monsters defeated','Боссов побеждено':'Bosses defeated',
+'Монет собрано':'Coins collected','Выстрелов':'Shots fired','Побед в гонках':'Race wins','Задание выполнено! +':'Quest complete! +',
+'Doodle Jump: прогресс':'Doodle Jump: progress','Файл готов ✓':'File ready ✓','Файл сохранён ✓':'File saved ✓',
+'Это не файл прогресса Doodle Jump':'This is not a Doodle Jump progress file','Это не файл прогресса':'This is not a progress file',
+'Файл повреждён':'File is damaged','Отменено':'Cancelled','Прогресс загружен ✓':'Progress loaded ✓',
+'Заменить текущий прогресс (монеты, скины, статистику) данными из файла?':'Replace current progress (coins, skins, stats) with data from the file?',
+'Файл слишком большой':'File is too large','Не удалось прочитать файл':'Could not read the file',
+'Я набрал ':'I scored ',' очков в Doodle Jump! 🐥 Сможешь больше?':' points in Doodle Jump! 🐥 Can you beat that?',
+'Скопировано ✓':'Copied ✓','Не удалось скопировать':'Could not copy',
+'Уровень ':'Level ','🎉 Новый рекорд!':'🎉 New record!','Рекорд: ':'Best: ','⚠ Босс!':'⚠ Boss!','Босс побеждён! +10 🪙':'Boss defeated! +10 🪙',
+'Датчик работает ✓':'Sensor works ✓',
+'Датчик не отвечает. Внутри claude.ai он может быть заблокирован: открой игру из скачанного файла или выбери другой режим':'The sensor is not responding. Try another control mode or open the game in your browser',
+'Загрузка…':'Loading…','Пока никого нет. Будь первым!':'Nobody here yet. Be the first!',
+'Нет связи с таблицей. Проверь интернет':'Can’t reach the leaderboard. Check your connection',
+'Сыграй хотя бы раз, чтобы отправить рекорд':'Play at least once to submit a record','Отправить рекорд':'Submit record',
+'Новый рекорд! Как записать тебя в таблицу лидеров?\nЧтобы пропустить, нажми «Отмена».':'New record! What name should we put on the leaderboard?\nTo skip, press “Cancel”.',
+'🎉 Новый рекорд! Он в таблице лидеров ✓':'🎉 New record! It’s on the leaderboard ✓',
+'Введи имя (минимум 2 символа)':'Enter a name (at least 2 characters)','Отправляем…':'Sending…','Рекорд отправлен ✓':'Record sent ✓',
+'Не удалось отправить':'Could not send','Нет связи. Попробуй позже':'No connection. Try again later',
+'Ты: ':'You: ',' · друг ещё играет (':' · friend is still playing (','Ждём друга…':'Waiting for your friend…','🏆 Ты победил!':'🏆 You won!',
+'Друг победил':'Your friend won',' · друг отключился':' · friend disconnected','Ждём хозяина…':'Waiting for the host…',
+'Друг подключился! Жми «Начать гонку»':'Friend connected! Press “Start race”','Подключено! Ждём, пока хозяин начнёт':'Connected! Waiting for the host to start',
+'Друг отключился':'Friend disconnected','Создаём комнату…':'Creating room…','Не удалось создать комнату':'Could not create the room',
+'Скажи этот код другу и жди':'Tell this code to your friend and wait','Ошибка соединения: ':'Connection error: ',
+'Нет связи с сервисом. Проверь интернет':'Can’t reach the service. Check your connection','Введи 4 цифры кода':'Enter the 4-digit code',
+'Подключаемся…':'Connecting…','Не удалось подключиться. Проверь код':'Could not connect. Check the code','Не удалось подключиться':'Could not connect',
+'Комната не найдена':'Room not found','Ур. ':'Lv ','Друг: ':'Friend: ','Цвет ':'Color ','Игра окончена. Очки: ':'Game over. Score: '
+};
+const PTK=Object.keys(PT).sort((a,b)=>b.length-a.length),CYR=/[А-Яа-яЁё]/,tcache=new Map();
+function T(s){
+ if(!EN||typeof s!=='string'||!CYR.test(s))return s;
+ let r=tcache.get(s);if(r!==undefined)return r;
+ const m=/^(\s*)([\s\S]*?)(\s*)$/.exec(s);r=EX[m[2]];
+ if(r===undefined){r=m[2];for(const k of PTK)if(r.includes(k))r=r.split(k).join(PT[k])}
+ r=m[1]+r+m[3];if(tcache.size>500)tcache.clear();tcache.set(s,r);return r}
+if(EN){
+ document.documentElement.lang='en';
+ const AT=['aria-label','placeholder','title'];
+ const skip=n=>{const e=n.nodeType===3?n.parentElement:n;return !!(e&&e.closest&&e.closest('#lbl .lbr,#lbname'))};   // имена игроков не переводим
+ const tn=n=>{if(skip(n))return;const v=n.nodeValue;if(CYR.test(v)){const t=T(v);if(t!==v)n.nodeValue=t}};
+ const te=e=>{for(const a of AT){const v=e.getAttribute&&e.getAttribute(a);if(v&&CYR.test(v)){const t=T(v);if(t!==v)e.setAttribute(a,t)}}};
+ const walk=n=>{if(n.nodeType===3){tn(n);return}if(n.nodeType!==1||n.tagName==='SCRIPT'||n.tagName==='STYLE')return;te(n);n.childNodes.forEach(walk)};
+ walk(document.body);
+ const md=document.querySelector('meta[name=description]');if(md)md.content='Doodle Jump: jump as high as you can. Monsters, bosses, changing seasons, skins and races with a friend. Works offline.';
+ new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData')tn(m.target);else if(m.type==='attributes')te(m.target);else m.addedNodes.forEach(walk)}})
+  .observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:AT});
+ const _p=window.prompt.bind(window),_c=window.confirm.bind(window);window.prompt=(m,d)=>_p(T(m),d);window.confirm=m=>_c(T(m));
+}
+/* смена языка в настройках применяется перезагрузкой страницы */
+document.querySelectorAll('.seg[data-k=lang] button').forEach(b=>b.addEventListener('click',()=>setTimeout(()=>location.reload(),200)));
 
 /* Звук, вибрация и фоновая музыка.
    Подключается обычным <script> по порядку из index.html: общая глобальная область видимости. */
 function snd(f,d,t,v){if(S.sound!=='on')return;try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();const o=ac.createOscillator(),g=ac.createGain();o.type=t||'sine';o.frequency.setValueAtTime(f,ac.currentTime);o.frequency.exponentialRampToValueAtTime(f*1.8,ac.currentTime+d);g.gain.setValueAtTime(v||.07,ac.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);o.connect(g).connect(ac.destination);o.start();o.stop(ac.currentTime+d)}catch(e){}}
 function vib(p){if(S.vib==='on'&&navigator.vibrate)try{navigator.vibrate(p)}catch(e){}}
 function tone(f,d,t,v){if(S.sound!=='on')return;try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();const o=ac.createOscillator(),g=ac.createGain();o.type=t;o.frequency.value=f;g.gain.setValueAtTime(v,ac.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);o.connect(g).connect(ac.destination);o.start();o.stop(ac.currentTime+d)}catch(e){}}
-const SC=[[0,2,4,7,9],[0,2,4,7,9],[0,3,5,7,10],[0,2,7,9,12]],PAT=[0,2,4,2,5,4,2,1];let ms=0;
-setInterval(()=>{if(S.music!=='on'||state!=='play')return;const sc=SC[lvl%4],i=PAT[ms++%PAT.length],n=sc[i%5]+(i>4?12:0)+[0,2,-3,5][lvl%4];tone(261.6*Math.pow(2,n/12),.3,'triangle',.035);if(ms%4===0)tone(130.8*Math.pow(2,sc[0]/12),.5,'sine',.04)},240);
+const SC=[[0,2,4,7,9],[0,2,4,7,9],[0,3,5,7,10],[0,2,7,9,12],[0,2,3,7,8]],PAT=[0,2,4,2,5,4,2,1];let ms=0;
+setInterval(()=>{if(S.music!=='on'||state!=='play')return;const sc=SC[lvl%SC.length],i=PAT[ms++%PAT.length],n=sc[i%5]+(i>4?12:0)+[0,2,-3,5,-1][lvl%5];tone(261.6*Math.pow(2,n/12),.3,'triangle',.035);if(ms%4===0)tone(130.8*Math.pow(2,sc[0]/12),.5,'sine',.04)},240);
 
 /* Ввод: клавиатура, касания, датчик наклона, кнопка стрельбы.
    Подключается обычным <script> по порядку из index.html: общая глобальная область видимости. */
@@ -86,7 +179,7 @@ function renderQ(){chk();const row=(t,p,g,ok)=>`<div class='qr${ok?' ok':''}'><s
  $('#ql').innerHTML=S.dq.q.map((q,i)=>row(QP[q][0]+' (+'+QP[q][3]+' 🪙)',S.dq.p[i],QP[q][2],S.dq.x[i])).join('');
  $('#al').innerHTML=AC.map(a=>row(a[0],S.st[a[1]]||0,a[2],(S.st[a[1]]||0)>=a[2])).join('');
  const SL=[['Лучший счёт','best'],['Игр сыграно','games'],['Монстров побеждено','kills'],['Боссов побеждено','bosses'],['Монет собрано','coins'],['Выстрелов','shots'],['Побед в гонках','wins']];
- $('#stl').innerHTML=SL.map(x=>`<div class='qr'><span>${x[0]}</span><b style='font-size:14px;color:inherit'>${(S.st[x[1]]||0).toLocaleString('ru-RU')}</b></div>`).join('')}
+ $('#stl').innerHTML=SL.map(x=>`<div class='qr'><span>${x[0]}</span><b style='font-size:14px;color:inherit'>${(S.st[x[1]]||0).toLocaleString(LOC)}</b></div>`).join('')}
 $('#qback').onclick=()=>show('menu');
 
 /* Магазин скинов.
@@ -99,13 +192,13 @@ function renderShop(){const g=$('#grid');g.innerHTML='';COLORS.forEach((c,i)=>{c
 /* Игровая логика: старт, конец игры, шаг физики, генерация платформ, стрельба, частицы.
    Подключается обычным <script> по порядку из index.html: общая глобальная область видимости. */
 function mk(y,easy){const t=Math.random(),h=Math.min(hgt/1500,1)*(DF()==='hard'?1.4:DF()==='easy'?.6:1);let type='n';
- if(!easy){if(t<.12+h*.12)type='m';else if(t<.26+h*.2)type=glv()%4===3?'c':'b';else if(glv()%4===3&&t>.7)type='c'}
+ if(!easy){if(t<.12+h*.12)type='m';else if(t<.26+h*.2)type=glv()%BIO.length===3?'c':'b';else if(glv()%BIO.length===3&&t>.7)type='c'}
  return{x:Math.random()*(W-70),y,w:70,type,dx:(1+Math.random()*1.4)*(Math.random()<.5?-1:1),dead:false,spring:!easy&&type==='n'&&Math.random()<.1}}
 function start(){askTilt();score=0;hgt=0;ev('games');parts=[];bul=[];ammo=0;ub();boss=null;bossLvl=-1;ebs=[];cool=0;mons=[];items=[];jet=0;sh=0;lvl=0;banner={t:120,s:'Уровень 1: Весна'};P={x:W/2-18,y:H-120,vx:0,vy:-11,w:36,h:40,face:1};
  plats=[{x:W/2-35,y:H-60,w:70,type:'n',dx:0,dead:false,spring:false}];gen(()=>{for(let y=H-130;y>-H;y-=60)plats.push(mk(y,y>H-300))});
  state='play';show('')}
 function end(){state='over';vib([80,40,120]);shake=8;evMax(score);snd(220,.5,'sawtooth',.06);const nb=score>best;if(nb){best=score;try{localStorage.setItem('dj_best',best)}catch(e){}}
- $('#fs').textContent=score;$('#fb').textContent=nb?'🎉 Новый рекорд!':'Рекорд: '+best;if(net.race){net.me=true;nsend({t:'f',v:score});res()}else{$('#again').textContent='Ещё раз';$('#again').disabled=false}show('over')}
+ $('#fs').textContent=score;$('#fb').textContent=nb?'🎉 Новый рекорд!':'Рекорд: '+best;if(net.race){net.me=true;nsend({t:'f',v:score});res()}else{$('#again').textContent='Ещё раз';$('#again').disabled=false}show('over');if((nb||S.lbpend)&&!net.race)lbAuto(nb)}
 function step(){
  const m=.6+S.sens*.14;let d=0;if(keys.arrowleft||keys.a)d=-1;if(keys.arrowright||keys.d)d=1;
  if(d){P.vx+=d*.9*m-P.vx*.12}
@@ -125,7 +218,7 @@ function step(){
  if(P.y<H*.4){const s=H*.4-P.y;P.y=H*.4;plats.forEach(p=>p.y+=s);mons.forEach(m=>m.y+=s);bul.forEach(b=>b.y+=s);ebs.forEach(e=>e.y+=s);items.forEach(i=>i.y+=s);bubbles.forEach(b=>{b.y+=s*b.z;if(b.y-b.r>H){b.y=-b.r;b.x=Math.random()*W}});score+=Math.round(s);hgt+=s}
  plats=plats.filter(p=>p.y<H+20);
  let top=Math.min(...plats.map(p=>p.y));const g=GAP[DF()];
- gen(()=>{while(top>-20){top-=(44+Math.random()*Math.min(38,16+hgt/200))*g*BIO[glv()%4].gap;const np=mk(top,false);plats.push(np);spawn(np)}});
+ gen(()=>{while(top>-20){top-=(44+Math.random()*Math.min(38,16+hgt/200))*g*BIO[glv()%BIO.length].gap;const np=mk(top,false);plats.push(np);spawn(np)}});
  if(net.race){const now=performance.now();if(net.on&&now-net.last>250){net.last=now;nsend({t:'s',v:score})}if(now-net.t0>120000&&state==='play')end()}
  if(cool>0)cool--;if(S.fire==='auto')fire();bul.forEach(b=>b.y+=b.vy);bul=bul.filter(b=>b.y>-20);
  const L=Math.floor(hgt/2500);if(L!==lvl&&!boss){lvl=L;ebs=[];banner={t:140,s:'Уровень '+(L+1)+': '+B().n}}
@@ -159,9 +252,9 @@ function spawn(p){const r=Math.random(),cx=p.x+p.w/2;
 function rr(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r)}
 function draw(){ctx.setTransform(DPR,0,0,DPR,0,0);ctx.clearRect(0,0,W,H);if(RM.matches)shake=0;if(shake>.3){ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);shake*=Math.pow(.85,rdt)}else shake=0;
  const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,col.sky1);g.addColorStop(1,col.sky2);ctx.fillStyle=g;ctx.fillRect(0,0,W,H);const bo=B();if(bo.a){ctx.globalAlpha=bo.a;ctx.fillStyle=bo.tint;ctx.fillRect(0,0,W,H);ctx.globalAlpha=1}
- const sn=lvl%4;ctx.fillStyle=['rgba(255,170,200,.6)','rgba(255,240,150,.22)','rgba(230,110,30,.6)','rgba(255,255,255,.85)'][sn];bubbles.forEach(b=>{const rm=RM.matches?.25:1;b.y+=(.35+b.z)*rdt*rm;b.x+=Math.sin(performance.now()/900+b.r)*.5*rdt*rm;if(b.y-b.r>H){b.y=-b.r;b.x=Math.random()*W}ctx.beginPath();if(sn===1)ctx.arc(b.x,b.y,b.r,0,7);else if(sn===3)ctx.arc(b.x,b.y,b.r*.2+1.5,0,7);else ctx.ellipse(b.x,b.y,b.r*.25+2,b.r*.12+1,performance.now()/1500+b.r,0,7);ctx.fill()});
+ const sn=lvl%BIO.length;ctx.fillStyle=['rgba(255,170,200,.6)','rgba(255,240,150,.22)','rgba(230,110,30,.6)','rgba(255,255,255,.85)','rgba(210,220,255,.8)'][sn];bubbles.forEach(b=>{const rm=RM.matches?.25:1;b.y+=(.35+b.z)*rdt*rm;b.x+=Math.sin(performance.now()/900+b.r)*.5*rdt*rm;if(b.y-b.r>H){b.y=-b.r;b.x=Math.random()*W}ctx.beginPath();if(sn===1)ctx.arc(b.x,b.y,b.r,0,7);else if(sn===3)ctx.arc(b.x,b.y,b.r*.2+1.5,0,7);else ctx.ellipse(b.x,b.y,b.r*.25+2,b.r*.12+1,performance.now()/1500+b.r,0,7);ctx.fill()});
  if(!plats)return;
- for(const p of plats){ctx.globalAlpha=p.dead?Math.max(0,1-p.fall/12):1;const c=p.type==='n'?PC[lvl%4]:p.type==='m'?['#7cc4ff','#3b8fe0']:p.type==='c'?['#7fd3ff','#3a9be0']:['#d9a877','#a06c3b'];
+ for(const p of plats){ctx.globalAlpha=p.dead?Math.max(0,1-p.fall/12):1;const c=p.type==='n'?PC[lvl%BIO.length]:p.type==='m'?['#7cc4ff','#3b8fe0']:p.type==='c'?['#7fd3ff','#3a9be0']:['#d9a877','#a06c3b'];
   const pg=ctx.createLinearGradient(0,p.y,0,p.y+14);pg.addColorStop(0,c[0]);pg.addColorStop(1,c[1]);
   ctx.shadowColor='rgba(0,0,0,.2)';ctx.shadowBlur=8;ctx.shadowOffsetY=3;ctx.fillStyle=pg;rr(p.x,p.y+(p.sq>0?Math.sin(p.sq/8*Math.PI)*4:0),p.w,14,7);ctx.fill();ctx.shadowColor='transparent';
   if(p.type==='b'){ctx.strokeStyle='rgba(0,0,0,.35)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(p.x+30,p.y+1);ctx.lineTo(p.x+36,p.y+8);ctx.lineTo(p.x+32,p.y+13);ctx.stroke()}
@@ -181,10 +274,10 @@ function draw(){ctx.setTransform(DPR,0,0,DPR,0,0);ctx.clearRect(0,0,W,H);if(RM.m
  else if(sk===7){ctx.fillStyle='#ffd23f';ctx.strokeStyle='#b8860b';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-13,-38);ctx.lineTo(-13,-50);ctx.lineTo(-6,-43);ctx.lineTo(0,-53);ctx.lineTo(6,-43);ctx.lineTo(13,-50);ctx.lineTo(13,-38);ctx.closePath();ctx.fill();ctx.stroke()}
  ctx.restore();
  if(state==='play'||state==='pause'){ctx.fillStyle=col.glass;rr(12,12,Math.max(84,40+String(score).length*14),42,21);ctx.fill();ctx.fillStyle=col.ink;ctx.font='800 22px system-ui';ctx.textAlign='left';ctx.fillText(score,28,41);
- ctx.fillStyle=col.glass;rr(12,60,jet>0?225:195,24,12);ctx.fill();ctx.fillStyle=col.ink;ctx.font='600 12px system-ui';ctx.fillText('Ур. '+(lvl+1)+' · '+B().n+' · 🪙'+S.coins+(jet>0?'  🚀':''),22,76);
- if(net.race){ctx.fillStyle=col.glass;rr(12,90,170,24,12);ctx.fill();ctx.fillStyle=col.ink;ctx.font='600 12px system-ui';ctx.textAlign='left';ctx.fillText('Друг: '+net.opp+(net.oppDead?' ✖':''),22,106)}
- if(banner){ctx.globalAlpha=Math.min(1,banner.t/30);ctx.fillStyle=col.glass;rr(W/2-130,120,260,46,23);ctx.fill();ctx.fillStyle=col.ink;ctx.textAlign='center';ctx.font='800 20px system-ui';ctx.fillText(banner.s,W/2,150);ctx.globalAlpha=1}}}
-function skin(i,c,f){i=Math.min(i,5);const g=ctx.createLinearGradient(0,-40,0,-4);g.addColorStop(0,c[0]);g.addColorStop(1,c[1]);
+ ctx.fillStyle=col.glass;rr(12,60,jet>0?225:195,24,12);ctx.fill();ctx.fillStyle=col.ink;ctx.font='600 12px system-ui';ctx.fillText(T('Ур. '+(lvl+1)+' · '+B().n+' · 🪙'+S.coins+(jet>0?'  🚀':'')),22,76);
+ if(net.race){ctx.fillStyle=col.glass;rr(12,90,170,24,12);ctx.fill();ctx.fillStyle=col.ink;ctx.font='600 12px system-ui';ctx.textAlign='left';ctx.fillText(T('Друг: '+net.opp+(net.oppDead?' ✖':'')),22,106)}
+ if(banner){ctx.globalAlpha=Math.min(1,banner.t/30);ctx.fillStyle=col.glass;rr(W/2-130,120,260,46,23);ctx.fill();ctx.fillStyle=col.ink;ctx.textAlign='center';ctx.font='800 20px system-ui';ctx.fillText(T(banner.s),W/2,150);ctx.globalAlpha=1}}}
+function skin(i,c,f){i=Math.min(i,7);const g=ctx.createLinearGradient(0,-40,0,-4);g.addColorStop(0,c[0]);g.addColorStop(1,c[1]);
  ctx.shadowColor='rgba(0,0,0,.25)';ctx.shadowBlur=10;ctx.shadowOffsetY=4;ctx.fillStyle=g;ctx.strokeStyle=c[1];ctx.lineWidth=3;ctx.lineCap='round';ctx.lineJoin='round';
  const eye=(x,y,r)=>{ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(x+f*1.5,y,r,0,7);ctx.fill();ctx.fillStyle='#1c2433';ctx.beginPath();ctx.arc(x+f*3,y,r*.45,0,7);ctx.fill()};
  const lg=Math.sin(frame/3)*(P.vy<0?3:1),legs=()=>{ctx.strokeStyle=c[1];ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(-8,-6);ctx.lineTo(-8+lg,1);ctx.moveTo(8,-6);ctx.lineTo(8-lg,1);ctx.stroke()};
@@ -200,11 +293,19 @@ function skin(i,c,f){i=Math.min(i,5);const g=ctx.createLinearGradient(0,-40,0,-4
  else if(i===4){ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(0,-22,16,18,0,0,7);ctx.fill();ctx.shadowColor='transparent';const fl=P.vy<0?-.7:.35;ctx.fillStyle=c[1];[-1,1].forEach(s=>{ctx.beginPath();ctx.ellipse(s*17,-20,4,10,s*fl,0,7);ctx.fill()});
   ctx.fillStyle='#fff';ctx.beginPath();ctx.ellipse(f*1.5,-18,10,13,0,0,7);ctx.fill();eye(-5,-30,3.6);eye(6,-30,3.6);ctx.fillStyle='#ff9f1c';ctx.beginPath();ctx.moveTo(f,-26);ctx.lineTo(f*10,-23);ctx.lineTo(f,-20);ctx.closePath();ctx.fill();
   [-7,7].forEach((x,k)=>{ctx.beginPath();ctx.ellipse(x+lg*(k?-.5:.5),-2,6,3,0,0,7);ctx.fill()})}
+ else if(i===6){const w=Math.sin(frame/4)*(P.vy<0?9:3);ctx.fillStyle=c[1];ctx.globalAlpha=.9;ctx.beginPath();ctx.moveTo(-f*13,-24);ctx.quadraticCurveTo(-f*36,-36-w,-f*30,-12);ctx.closePath();ctx.fill();ctx.stroke();ctx.globalAlpha=1;
+  ctx.fillStyle='#ffd23f';ctx.beginPath();ctx.moveTo(-9,-35);ctx.lineTo(-13,-48);ctx.lineTo(-3,-37);ctx.moveTo(9,-35);ctx.lineTo(13,-48);ctx.lineTo(3,-37);ctx.fill();
+  ctx.fillStyle=g;ctx.beginPath();ctx.roundRect(-16,-36,32,30,12);ctx.fill();ctx.stroke();ctx.shadowColor='transparent';eye(-6,-26,4.5);eye(7,-26,4.5);
+  ctx.fillStyle='#ffe3c2';ctx.beginPath();ctx.ellipse(f*2,-14,9,5.5,0,0,7);ctx.fill();ctx.fillStyle='#8a2a14';[-3,3].forEach(x=>{ctx.beginPath();ctx.arc(f*2+x,-14,1.3,0,7);ctx.fill()});legs()}
+ else if(i===7){ctx.fillStyle=g;ctx.beginPath();ctx.roundRect(-16,-36,32,30,13);ctx.fill();ctx.stroke();ctx.shadowColor='transparent';
+  ['#ff8fb1','#ffd36b','#8fd3ff'].forEach((m,k)=>{ctx.fillStyle=m;ctx.beginPath();ctx.ellipse(-f*15,-30+k*7,4,5,0,0,7);ctx.fill()});
+  ctx.fillStyle='#ffd23f';ctx.strokeStyle='#e0a800';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-4,-35);ctx.lineTo(0,-51);ctx.lineTo(4,-35);ctx.closePath();ctx.fill();ctx.stroke();
+  eye(-6,-25,4.5);eye(7,-25,4.5);ctx.fillStyle='#ff9ab8';ctx.beginPath();ctx.arc(f*3,-15,2.2,0,7);ctx.fill();legs()}
  else{ctx.fillStyle='#9fb4d8';ctx.beginPath();ctx.roundRect(f>0?-23:17,-30,6,18,3);ctx.fill();ctx.fillStyle=g;ctx.beginPath();ctx.roundRect(-16,-36,32,30,12);ctx.fill();ctx.stroke();ctx.shadowColor='transparent';
   ctx.fillStyle='#16224a';ctx.beginPath();ctx.roundRect(-12,-33,24,17,8);ctx.fill();ctx.fillStyle='#8be9ff';[-4,5].forEach(x=>{ctx.beginPath();ctx.arc(x+f*2,-24,2,0,7);ctx.fill()});
   ctx.fillStyle='rgba(255,255,255,.55)';ctx.beginPath();ctx.ellipse(-6,-29,3,2,-.5,0,7);ctx.fill();ctx.fillStyle='#ff5a5f';ctx.beginPath();ctx.arc(7,-11,2.5,0,7);ctx.fill();legs()}}
 function drawBoss(){ebs.forEach(e=>{ctx.fillStyle='#ff4d4d';ctx.beginPath();ctx.arc(e.x,e.y,7,0,7);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke()});if(!boss)return;
- ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='64px system-ui';ctx.globalAlpha=boss.hit>0&&boss.hit%2?.4:1;ctx.fillText(BOSS[lvl%4],boss.x+boss.w/2,boss.y+boss.h/2);ctx.globalAlpha=1;ctx.textBaseline='alphabetic';
+ ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='64px system-ui';ctx.globalAlpha=boss.hit>0&&boss.hit%2?.4:1;ctx.fillText(BOSS[lvl%BIO.length],boss.x+boss.w/2,boss.y+boss.h/2);ctx.globalAlpha=1;ctx.textBaseline='alphabetic';
  ctx.fillStyle='rgba(0,0,0,.35)';rr(W/2-70,96,140,10,5);ctx.fill();ctx.fillStyle='#ff4d4d';rr(W/2-70,96,Math.max(0,140*boss.hp/boss.max),10,5);ctx.fill()}
 function drawObjs(){drawBoss();ctx.textAlign='center';ctx.font='22px system-ui';
  bul.forEach(b=>{ctx.fillStyle='#ff9f1c';ctx.beginPath();ctx.arc(b.x,b.y,4.5,0,7);ctx.fill()});
@@ -229,7 +330,7 @@ COLORS.forEach((c,i)=>{const b=document.createElement('button');b.dataset.v=i;b.
 document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{const k=b.parentNode.dataset.k,v=b.dataset.v;S[k]=k==='color'?+v:v;if(k==='ctrl'&&v==='tilt')askTilt();save();apply()});
 $('#sens').oninput=e=>{S.sens=+e.target.value;save()};
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('show',s.id===id));$('#pb').style.display=state==='play'&&!net.race?'block':'none';$('#fire').style.display=state==='play'&&S.fire==='btn'?'block':'none';$('#bestm').textContent=best;$('#cn').textContent=S.coins;$('#cn2').textContent=S.coins;
- if(id==='over'){$('#live').textContent='Игра окончена. Очки: '+score;$('#share').style.display=net.race?'none':'block';$('#share').textContent='📤 Поделиться результатом'}
+ if(id==='over'){$('#live').textContent='Игра окончена. Очки: '+score;$('#share').style.display=net.race?'none':'block';$('#lbover').style.display=LB_ON&&!net.race?'block':'none';$('#share').textContent='📤 Поделиться результатом'}
  if(id){const t=document.querySelector('#'+id+' button');if(t)try{t.focus({preventScroll:true})}catch(e){}}}
 let from='menu';
 document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{from=state;if(b.dataset.open==='online'&&!net.on)ns('Создай комнату или введи код друга');if(b.dataset.open==='quests')renderQ();if(b.dataset.open==='shop')renderShop();if(b.dataset.open==='lb')lbOpen();show(b.dataset.open)});
@@ -253,7 +354,7 @@ async function exportData(){chk();
  const data={app:'doodle-jump',v:1,date:new Date().toISOString(),best,coins:S.coins,owned:S.owned,color:S.color,st:S.st};
  const name='doodle-jump-progress.json',blob=new Blob([JSON.stringify(data,null,1)],{type:'application/json'});
  try{const f=new File([blob],name,{type:'application/json'});
-  if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'Doodle Jump: прогресс'});dh('Файл готов ✓');return}}catch(e){if(e&&e.name==='AbortError')return}
+  if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:T('Doodle Jump: прогресс')});dh('Файл готов ✓');return}}catch(e){if(e&&e.name==='AbortError')return}
  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();
  setTimeout(()=>URL.revokeObjectURL(a.href),4000);dh('Файл сохранён ✓')}
 function importData(txt){
@@ -275,7 +376,7 @@ $('#impf').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return
  if(f.size>200000){dh('Файл слишком большой');return}
  f.text().then(t=>dh(importData(t))).catch(()=>dh('Не удалось прочитать файл'))};
 $('#share').onclick=async()=>{
- const text='Я набрал '+score+' очков в Doodle Jump! 🐥 Сможешь больше?',url=location.href.split('#')[0];
+ const text=T('Я набрал '+score+' очков в Doodle Jump! 🐥 Сможешь больше?'),url=location.href.split('#')[0];
  try{if(navigator.share){await navigator.share({title:'Doodle Jump',text,url});return}}catch(e){if(e&&e.name==='AbortError')return}
  try{await navigator.clipboard.writeText(text+' '+url);$('#share').textContent='Скопировано ✓'}catch(e){$('#share').textContent='Не удалось скопировать'}};
 
@@ -299,21 +400,38 @@ async function lbLoad(){
   rows.forEach((x,i)=>{const row=document.createElement('div');row.className='lbr'+(me&&x.id===me?' me':'');
    const n=document.createElement('b');n.textContent=i+1;
    const s=document.createElement('span');s.textContent=x.name;
-   const p=document.createElement('em');p.textContent=x.score.toLocaleString('ru-RU');
+   const p=document.createElement('em');p.textContent=x.score.toLocaleString(LOC);
    row.append(n,s,p);box.appendChild(row)})
  }catch(e){box.textContent='Нет связи с таблицей. Проверь интернет'}}
 function lbOpen(){
  $('#lbname').value=S.name||'';$('#lbhint').textContent=best>0?'':'Сыграй хотя бы раз, чтобы отправить рекорд';
  $('#lbsend').textContent='Отправить рекорд'+(best>0?' ('+best+')':'');$('#lbsend').disabled=best<=0;lbLoad()}
+async function lbSubmit(name){
+ const r=await lbFetch('/rest/v1/rpc/submit_score',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({p_pid:lbId(),p_name:name,p_score:best})});
+ return r.ok}
+/* Автоотправка: после нового рекорда (и повторная попытка, если прошлая не удалась).
+   Имя спрашиваем один раз; «Отмена» отключает вопрос, отправить можно вручную в таблице. */
+function lbAuto(nb){
+ if(!LB_ON)return;
+ setTimeout(async()=>{
+  let name=lbClean(S.name);
+  if(name.length<2){
+   if(!nb||S.lbno)return;
+   const a=lbClean(prompt('Новый рекорд! Как записать тебя в таблицу лидеров?\nЧтобы пропустить, нажми «Отмена».','')||'');
+   if(a.length<2){S.lbno=1;save();return}
+   name=S.name=a;save()}
+  let ok=false;try{ok=await lbSubmit(name)}catch(e){}
+  S.lbpend=!ok;save();
+  if(ok&&state==='over')$('#fb').textContent='🎉 Новый рекорд! Он в таблице лидеров ✓'},600)}
 $('#lbsend').onclick=async()=>{
  const name=lbClean($('#lbname').value),h=$('#lbhint'),btn=$('#lbsend');
  if(name.length<2){h.textContent='Введи имя (минимум 2 символа)';return}
  S.name=name;save();btn.disabled=true;h.textContent='Отправляем…';
- try{const r=await lbFetch('/rest/v1/rpc/submit_score',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({p_pid:lbId(),p_name:name,p_score:best})});
-  h.textContent=r.ok?'Рекорд отправлен ✓':'Не удалось отправить'
+ try{const ok=await lbSubmit(name);S.lbpend=!ok;save();
+  h.textContent=ok?'Рекорд отправлен ✓':'Не удалось отправить'
  }catch(e){h.textContent='Нет связи. Попробуй позже'}
  btn.disabled=best<=0;lbLoad()};
-$('#lbback').onclick=()=>show('menu');
+$('#lbback').onclick=()=>show(from==='over'?'over':'menu');
 if(LB_ON)$('#lbbtn').style.display='block';
 
 /* Игровой цикл, пауза при сворачивании, service worker, установка PWA, запуск.
